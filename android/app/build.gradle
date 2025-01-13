@@ -1,0 +1,101 @@
+// plugins {
+//     id "com.android.application"
+//     id "kotlin-android"
+//     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+//     id "dev.flutter.flutter-gradle-plugin"
+// }
+
+// android {
+//     namespace = "com.example.app_medicamentos"
+//     compileSdk = flutter.compileSdkVersion
+//     ndkVersion = flutter.ndkVersion
+
+//     compileOptions {
+//         sourceCompatibility = JavaVersion.VERSION_1_8
+//         targetCompatibility = JavaVersion.VERSION_1_8
+//     }
+
+//     kotlinOptions {
+//         jvmTarget = JavaVersion.VERSION_1_8
+//     }
+
+//     defaultConfig {
+//         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+//         applicationId = "com.example.app_medicamentos"
+//         // You can update the following values to match your application needs.
+//         // For more information, see: https://flutter.dev/to/review-gradle-config.
+//         minSdk = flutter.minSdkVersion
+//         targetSdk = flutter.targetSdkVersion
+//         versionCode = flutter.versionCode
+//         versionName = flutter.versionName
+//         minSdkVersion 23
+//     }
+
+//     buildTypes {
+//         release {
+//             // TODO: Add your own signing config for the release build.
+//             // Signing with the debug keys for now, so `flutter run --release` works.
+//             signingConfig = signingConfigs.debug
+//         }
+//     }
+// }
+
+// flutter {
+//     source = "../.."
+// }
+
+// apply plugin: 'com.google.gms.google-services'
+
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // O plugin Flutter deve ser aplicado após os plugins do Android e Kotlin
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace = "com.example.app_medicamentos"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        // Id do aplicativo (ID único para seu app)
+        applicationId = "com.example.app_medicamentos"
+        // As versões mínimas e de destino do SDK
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+        minSdkVersion 23  // Verifique se a versão mínima do SDK atende aos requisitos do Firebase
+    }
+
+    buildTypes {
+        release {
+            // Configuração de assinatura para a versão de release
+            signingConfig = signingConfigs.debug
+        }
+    }
+}
+
+flutter {
+    source = "../.."  // A pasta onde o código Flutter está localizado
+}
+
+dependencies {
+    implementation 'com.google.firebase:firebase-auth:21.1.0'  // Ou a versão mais recente
+    implementation 'com.google.firebase:firebase-core:21.1.0'  // Ou a versão mais recente
+    // outras dependências...
+}
+
+// Aqui aplica o plugin do Firebase
+apply plugin: 'com.google.gms.google-services'  // Esse deve ser o último plugin no arquivo
+
