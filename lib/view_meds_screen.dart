@@ -85,7 +85,15 @@ class _ViewMedicamentosScreenState extends State<ViewMedicamentosScreen> {
                                     medicamento.data() as Map<String, dynamic>,
                               ),
                             ),
-                          );
+                          ).then((result) {
+                            if (result == true) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text(
+                                        'Medicamento atualizado com sucesso')),
+                              );
+                            }
+                          });
                         },
                       ),
                       IconButton(

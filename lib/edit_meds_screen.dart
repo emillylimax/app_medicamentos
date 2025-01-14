@@ -117,11 +117,7 @@ class _EditMedicamentoScreenState extends State<EditMedicamentoScreen> {
         'duracao': _duracaoController.text,
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Medicamento atualizado com sucesso')),
-      );
-
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     } catch (e) {
       print('Erro ao atualizar medicamento: $e');
       ScaffoldMessenger.of(context).showSnackBar(

@@ -4,6 +4,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class CadastroMedicamentosScreen extends StatefulWidget {
+  final Function(Map<String, dynamic>) onSave;
+
+  CadastroMedicamentosScreen({required this.onSave});
+
   @override
   _CadastroMedicamentosScreenState createState() =>
       _CadastroMedicamentosScreenState();
@@ -68,7 +72,7 @@ class _CadastroMedicamentosScreenState
     }
   }
 
-  Future<void> _salvarMedicamento() async {
+  void _salvarMedicamento() {
     if (_nomeController.text.isEmpty ||
         _dosagemController.text.isEmpty ||
         _diasSelecionados.isEmpty ||
@@ -77,27 +81,15 @@ class _CadastroMedicamentosScreenState
       return;
     }
 
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return;
-    }
+    final medicamento = {
+      'nome': _nomeController.text,
+      'dosagem': _dosagemController.text,
+      'frequencia': {'dias': _diasSelecionados, 'horario': _horarioSelecionado},
+      'duracao': _duracaoController.text,
+    };
 
-    try {
-      await FirebaseFirestore.instance.collection('medicamentos').add({
-        'uid': user.uid,
-        'nome': _nomeController.text,
-        'dosagem': _dosagemController.text,
-        'frequencia': {
-          'dias': _diasSelecionados,
-          'horario': _horarioSelecionado
-        },
-        'duracao': _duracaoController.text,
-      });
-
-      Navigator.pop(context);
-    } catch (e) {
-      print('Erro ao salvar medicamento: $e');
-    }
+    widget.onSave(medicamento);
+    Navigator.pop(context);
   }
 
   @override
