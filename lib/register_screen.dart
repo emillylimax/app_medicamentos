@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -8,15 +11,17 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _dobController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  DateTime _selectedDate = DateTime.now();
+
   Future<void> _createAccountWithEmailPassword() async {
     String name = _nameController.text;
-    String dob = _dobController.text;
+    String dob = DateFormat('dd-MM-yyyy').format(_selectedDate);
     String email = _emailController.text;
     String password = _passwordController.text;
 
@@ -26,12 +31,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     try {
-      await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      Navigator.pushReplacementNamed(context, '/home');
+      User? user = userCredential.user;
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).set({
+          'name': name,
+          'dob': dob,
+          'email': email,
+        });
+
+        await user.updateDisplayName(name);
+
+        Navigator.pushReplacementNamed(context, '/home');
+      }
     } catch (e) {
       _showErrorDialog("Erro ao registrar usuário: ${e.toString()}");
     }
@@ -67,9 +84,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
               controller: _nameController,
               decoration: InputDecoration(labelText: 'Nome Completo'),
             ),
+            SizedBox(height: 20),
+            Text('Data de Nascimento', style: TextStyle(fontSize: 16)),
+            SizedBox(height: 10),
+            Container(
+              height: 150,
+              child: CupertinoDatePicker(
+                mode: CupertinoDatePickerMode.date,
+                initialDateTime: _selectedDate,
+                onDateTimeChanged: (DateTime newDateTime) {
+                  setState(() {
+                    _selectedDate = newDateTime;
+                  });
+                },
+                maximumDate: DateTime.now(),
+                minimumYear: 1900,
+                maximumYear: DateTime.now().year,
+              ),
+            ),
             TextField(
-              controller: _dobController,
+              controller: TextEditingController(
+                text: DateFormat('dd-MM-yyyy').format(_selectedDate),
+              ),
               decoration: InputDecoration(labelText: 'Data de Nascimento'),
+              readOnly: true,
             ),
             TextField(
               controller: _emailController,
