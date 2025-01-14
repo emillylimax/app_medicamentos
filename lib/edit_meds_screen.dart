@@ -1,6 +1,11 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:hive/hive.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class EditMedicamentoScreen extends StatefulWidget {
   final String medicamentoId;
@@ -23,6 +28,8 @@ class _EditMedicamentoScreenState extends State<EditMedicamentoScreen> {
   List<String> _diasSelecionados = [];
   String _horarioSelecionado = '08:00';
   String _duracaoSelecionada = 'Contínuo';
+  late Box _medicamentosBox;
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
   @override
   void initState() {
@@ -40,16 +47,91 @@ class _EditMedicamentoScreenState extends State<EditMedicamentoScreen> {
       _horarioSelecionado =
           widget.currentData['frequencia']['horario'] ?? '08:00';
     }
-  }
 
-  void _toggleDia(String dia) {
-    setState(() {
-      if (_diasSelecionados.contains(dia)) {
-        _diasSelecionados.remove(dia);
-      } else {
-        _diasSelecionados.add(dia);
+    _initializeHive();
+    _connectivitySubscription = Connectivity()
+        .onConnectivityChanged
+        .listen((List<ConnectivityResult> results) {
+      if (results.any((result) => result != ConnectivityResult.none)) {
+        _syncLocalDataWithFirebase();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initializeHive() async {
+    _medicamentosBox = await Hive.openBox('medicamentos');
+  }
+
+  Future<void> _salvarAlteracoes() async {
+    if (_nomeController.text.isEmpty ||
+        _dosagemController.text.isEmpty ||
+        _diasSelecionados.isEmpty ||
+        _horarioSelecionado.isEmpty ||
+        _duracaoController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Todos os campos devem ser preenchidos')),
+      );
+      return;
+    }
+
+    final medicamento = {
+      'nome': _nomeController.text,
+      'dosagem': _dosagemController.text,
+      'frequencia': {
+        'dias': _diasSelecionados,
+        'horario': _horarioSelecionado,
+      },
+      'duracao': _duracaoController.text,
+    };
+
+    if (await Connectivity().checkConnectivity() != ConnectivityResult.none) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('medicamentos')
+            .doc(widget.medicamentoId)
+            .update(medicamento);
+
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(content: Text('Medicamento atualizado com sucesso')),
+        // );
+
+        Navigator.pop(context, true);
+      } catch (e) {
+        print('Erro ao atualizar medicamento: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao atualizar medicamento')),
+        );
+      }
+    } else {
+      await _salvarMedicamentoLocalmente(medicamento);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Sem conexão. Dados salvos localmente.')),
+      );
+      Navigator.pop(context, true);
+    }
+  }
+
+  Future<void> _salvarMedicamentoLocalmente(
+      Map<String, dynamic> medicamento) async {
+    await _medicamentosBox.put(widget.medicamentoId, medicamento);
+  }
+
+  Future<void> _syncLocalDataWithFirebase() async {
+    final localData = _medicamentosBox.toMap();
+    for (var medicamentoId in localData.keys) {
+      final medicamento = localData[medicamentoId];
+      await FirebaseFirestore.instance
+          .collection('medicamentos')
+          .doc(medicamentoId)
+          .update(medicamento);
+    }
+    await _medicamentosBox.clear();
   }
 
   Future<void> _selecionarDuracaoPersonalizada() async {
@@ -91,39 +173,14 @@ class _EditMedicamentoScreenState extends State<EditMedicamentoScreen> {
     }
   }
 
-  Future<void> _salvarAlteracoes() async {
-    if (_nomeController.text.isEmpty ||
-        _dosagemController.text.isEmpty ||
-        _diasSelecionados.isEmpty ||
-        _horarioSelecionado.isEmpty ||
-        _duracaoController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Todos os campos devem ser preenchidos')),
-      );
-      return;
-    }
-
-    try {
-      await FirebaseFirestore.instance
-          .collection('medicamentos')
-          .doc(widget.medicamentoId)
-          .update({
-        'nome': _nomeController.text,
-        'dosagem': _dosagemController.text,
-        'frequencia': {
-          'dias': _diasSelecionados,
-          'horario': _horarioSelecionado,
-        },
-        'duracao': _duracaoController.text,
-      });
-
-      Navigator.pop(context, true);
-    } catch (e) {
-      print('Erro ao atualizar medicamento: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao atualizar medicamento')),
-      );
-    }
+  void _toggleDia(String dia) {
+    setState(() {
+      if (_diasSelecionados.contains(dia)) {
+        _diasSelecionados.remove(dia);
+      } else {
+        _diasSelecionados.add(dia);
+      }
+    });
   }
 
   @override
