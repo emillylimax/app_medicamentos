@@ -55,6 +55,11 @@ class _ViewMedicamentosScreenState extends State<ViewMedicamentosScreen> {
               final dosagem = medicamento['dosagem'] ?? 'Sem Dosagem';
               final frequencia = medicamento['frequencia'] ?? {};
               final duracao = medicamento['duracao'] ?? 'Sem Duração';
+              final observacoes = medicamento.data() != null &&
+                      (medicamento.data() as Map<String, dynamic>)
+                          .containsKey('observacoes')
+                  ? medicamento['observacoes']
+                  : 'Sem Observações';
 
               List<String> dias = frequencia['dias'] != null
                   ? List<String>.from(frequencia['dias'])
@@ -62,14 +67,19 @@ class _ViewMedicamentosScreenState extends State<ViewMedicamentosScreen> {
               String diasFormatados =
                   dias.isEmpty ? 'Sem Dias Selecionados' : dias.join(', ');
 
-              String horario = frequencia['horario'] ?? 'Sem Horário';
+              List<String> horarios = frequencia['horarios'] != null
+                  ? List<String>.from(frequencia['horarios'])
+                  : [];
+              String horariosFormatados = horarios.isEmpty
+                  ? 'Sem Horários Selecionados'
+                  : horarios.join(', ');
 
               return Card(
                 margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(
                   title: Text(nome, style: TextStyle(fontSize: 18)),
                   subtitle: Text(
-                      'Dosagem: $dosagem\nFrequência: $diasFormatados\nHorário: $horario\nDuração: $duracao'),
+                      'Dosagem: $dosagem\nFrequência: $diasFormatados\nHorários: $horariosFormatados\nDuração: $duracao\nObservações: $observacoes'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

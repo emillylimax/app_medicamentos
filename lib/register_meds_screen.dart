@@ -21,7 +21,7 @@ class _CadastroMedicamentosScreenState
   final TextEditingController _observacoesController = TextEditingController();
 
   List<String> _diasSelecionados = [];
-  String _horarioSelecionado = '08:00';
+  List<String> _horariosSelecionados = ['08:00'];
   String _duracaoSelecionada = 'Contínuo';
 
   void _toggleDia(String dia) {
@@ -73,11 +73,32 @@ class _CadastroMedicamentosScreenState
     }
   }
 
+  void _adicionarHorario() {
+    setState(() {
+      _horariosSelecionados.add('08:00');
+    });
+  }
+
+  void _removerHorario(int index) {
+    setState(() {
+      _horariosSelecionados.removeAt(index);
+    });
+  }
+
+  void _atualizarHorario(int index, Duration duration) {
+    final hour = duration.inHours;
+    final minute = duration.inMinutes % 60;
+    setState(() {
+      _horariosSelecionados[index] =
+          '$hour:${minute.toString().padLeft(2, '0')}';
+    });
+  }
+
   void _salvarMedicamento() {
     if (_nomeController.text.isEmpty ||
         _dosagemController.text.isEmpty ||
         _diasSelecionados.isEmpty ||
-        _horarioSelecionado.isEmpty ||
+        _horariosSelecionados.isEmpty ||
         _duracaoController.text.isEmpty) {
       return;
     }
@@ -85,7 +106,10 @@ class _CadastroMedicamentosScreenState
     final medicamento = {
       'nome': _nomeController.text,
       'dosagem': _dosagemController.text,
-      'frequencia': {'dias': _diasSelecionados, 'horario': _horarioSelecionado},
+      'frequencia': {
+        'dias': _diasSelecionados,
+        'horarios': _horariosSelecionados,
+      },
       'duracao': _duracaoController.text,
       'observacoes': _observacoesController.text,
     };
@@ -123,19 +147,38 @@ class _CadastroMedicamentosScreenState
                   _buildDiaButton('Domingo'),
                 ],
               ),
-              CupertinoTimerPicker(
-                mode: CupertinoTimerPickerMode.hm,
-                initialTimerDuration: Duration(
-                    hours: TimeOfDay.now().hour,
-                    minutes: TimeOfDay.now().minute),
-                onTimerDurationChanged: (duration) {
-                  final hour = duration.inHours;
-                  final minute = duration.inMinutes % 60;
-                  setState(() {
-                    _horarioSelecionado =
-                        '$hour:${minute.toString().padLeft(2, '0')}';
-                  });
-                },
+              Column(
+                children: _horariosSelecionados.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  String horario = entry.value;
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: CupertinoTimerPicker(
+                          mode: CupertinoTimerPickerMode.hm,
+                          initialTimerDuration: Duration(
+                              hours: int.parse(horario.split(':')[0]),
+                              minutes: int.parse(horario.split(':')[1])),
+                          onTimerDurationChanged: (duration) {
+                            _atualizarHorario(index, duration);
+                          },
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.remove_circle, color: Colors.red),
+                        onPressed: () => _removerHorario(index),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+              Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: _adicionarHorario,
+                    child: Text('Adicionar Horário'),
+                  ),
+                ],
               ),
               Row(
                 children: [
