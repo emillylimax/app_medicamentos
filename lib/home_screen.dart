@@ -219,6 +219,12 @@ class _HomeScreenState extends State<HomeScreen> {
         .collection('medicamentos')
         .doc(medicamentoId)
         .update({'tomado': true});
+    await FirebaseFirestore.instance.collection('consumo').add({
+      'medicamentoId': medicamentoId,
+      'nome': _medicamentosHoje
+          .firstWhere((med) => med['id'] == medicamentoId)['nome'],
+      'data': DateTime.now().toIso8601String(),
+    });
     _loadMedicamentosHoje();
   }
 
