@@ -76,54 +76,56 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Registrar Conta')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(labelText: 'Nome Completo'),
-            ),
-            SizedBox(height: 20),
-            Text('Data de Nascimento', style: TextStyle(fontSize: 16)),
-            SizedBox(height: 10),
-            Container(
-              height: 150,
-              child: CupertinoDatePicker(
-                mode: CupertinoDatePickerMode.date,
-                initialDateTime: _selectedDate,
-                onDateTimeChanged: (DateTime newDateTime) {
-                  setState(() {
-                    _selectedDate = newDateTime;
-                  });
-                },
-                maximumDate: DateTime.now(),
-                minimumYear: 1900,
-                maximumYear: DateTime.now().year,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              TextField(
+                controller: _nameController,
+                decoration: InputDecoration(labelText: 'Nome Completo'),
               ),
-            ),
-            TextField(
-              controller: TextEditingController(
-                text: DateFormat('dd-MM-yyyy').format(_selectedDate),
+              SizedBox(height: 20),
+              Text('Data de Nascimento', style: TextStyle(fontSize: 16)),
+              SizedBox(height: 10),
+              Container(
+                height: 150,
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.date,
+                  initialDateTime: _selectedDate,
+                  onDateTimeChanged: (DateTime newDateTime) {
+                    setState(() {
+                      _selectedDate = newDateTime;
+                    });
+                  },
+                  maximumDate: DateTime.now(),
+                  minimumYear: 1900,
+                  maximumYear: DateTime.now().year,
+                ),
               ),
-              decoration: InputDecoration(labelText: 'Data de Nascimento'),
-              readOnly: true,
-            ),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: 'E-mail'),
-            ),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: 'Senha'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _createAccountWithEmailPassword,
-              child: Text('Registrar'),
-            ),
-          ],
+              TextField(
+                controller: TextEditingController(
+                  text: DateFormat('dd-MM-yyyy').format(_selectedDate),
+                ),
+                decoration: InputDecoration(labelText: 'Data de Nascimento'),
+                readOnly: true,
+              ),
+              TextField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: 'E-mail'),
+              ),
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: InputDecoration(labelText: 'Senha'),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _createAccountWithEmailPassword,
+                child: Text('Registrar'),
+              ),
+            ],
+          ),
         ),
       ),
     );

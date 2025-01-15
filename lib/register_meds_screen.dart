@@ -18,6 +18,7 @@ class _CadastroMedicamentosScreenState
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _dosagemController = TextEditingController();
   final TextEditingController _duracaoController = TextEditingController();
+  final TextEditingController _observacoesController = TextEditingController();
 
   List<String> _diasSelecionados = [];
   String _horarioSelecionado = '08:00';
@@ -86,6 +87,7 @@ class _CadastroMedicamentosScreenState
       'dosagem': _dosagemController.text,
       'frequencia': {'dias': _diasSelecionados, 'horario': _horarioSelecionado},
       'duracao': _duracaoController.text,
+      'observacoes': _observacoesController.text,
     };
 
     widget.onSave(medicamento);
@@ -96,71 +98,80 @@ class _CadastroMedicamentosScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Cadastro de Medicamentos')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-                controller: _nomeController,
-                decoration: InputDecoration(labelText: 'Nome do Medicamento')),
-            TextField(
-                controller: _dosagemController,
-                decoration: InputDecoration(labelText: 'Dosagem')),
-            Wrap(
-              spacing: 8.0,
-              runSpacing: 8.0,
-              children: [
-                _buildDiaButton('Segunda'),
-                _buildDiaButton('Terça'),
-                _buildDiaButton('Quarta'),
-                _buildDiaButton('Quinta'),
-                _buildDiaButton('Sexta'),
-                _buildDiaButton('Sábado'),
-                _buildDiaButton('Domingo'),
-              ],
-            ),
-            CupertinoTimerPicker(
-              mode: CupertinoTimerPickerMode.hm,
-              initialTimerDuration: Duration(
-                  hours: TimeOfDay.now().hour, minutes: TimeOfDay.now().minute),
-              onTimerDurationChanged: (duration) {
-                final hour = duration.inHours;
-                final minute = duration.inMinutes % 60;
-                setState(() {
-                  _horarioSelecionado =
-                      '$hour:${minute.toString().padLeft(2, '0')}';
-                });
-              },
-            ),
-            Row(
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _duracaoSelecionada = 'Contínuo';
-                      _duracaoController.text = _duracaoSelecionada;
-                    });
-                  },
-                  child: Text('Contínuo'),
-                ),
-                SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: _selecionarDuracaoPersonalizada,
-                  child: Text('Personalizado'),
-                ),
-              ],
-            ),
-            TextField(
-              controller: _duracaoController,
-              decoration: InputDecoration(labelText: 'Duração do Tratamento'),
-              enabled: false,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _salvarMedicamento,
-              child: Text('Salvar Medicamento'),
-            ),
-          ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              TextField(
+                  controller: _nomeController,
+                  decoration:
+                      InputDecoration(labelText: 'Nome do Medicamento')),
+              TextField(
+                  controller: _dosagemController,
+                  decoration: InputDecoration(labelText: 'Dosagem')),
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 8.0,
+                children: [
+                  _buildDiaButton('Segunda'),
+                  _buildDiaButton('Terça'),
+                  _buildDiaButton('Quarta'),
+                  _buildDiaButton('Quinta'),
+                  _buildDiaButton('Sexta'),
+                  _buildDiaButton('Sábado'),
+                  _buildDiaButton('Domingo'),
+                ],
+              ),
+              CupertinoTimerPicker(
+                mode: CupertinoTimerPickerMode.hm,
+                initialTimerDuration: Duration(
+                    hours: TimeOfDay.now().hour,
+                    minutes: TimeOfDay.now().minute),
+                onTimerDurationChanged: (duration) {
+                  final hour = duration.inHours;
+                  final minute = duration.inMinutes % 60;
+                  setState(() {
+                    _horarioSelecionado =
+                        '$hour:${minute.toString().padLeft(2, '0')}';
+                  });
+                },
+              ),
+              Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _duracaoSelecionada = 'Contínuo';
+                        _duracaoController.text = _duracaoSelecionada;
+                      });
+                    },
+                    child: Text('Contínuo'),
+                  ),
+                  SizedBox(width: 16),
+                  ElevatedButton(
+                    onPressed: _selecionarDuracaoPersonalizada,
+                    child: Text('Personalizado'),
+                  ),
+                ],
+              ),
+              TextField(
+                controller: _duracaoController,
+                decoration: InputDecoration(labelText: 'Duração do Tratamento'),
+                enabled: false,
+              ),
+              TextField(
+                controller: _observacoesController,
+                decoration: InputDecoration(labelText: 'Observações'),
+                maxLines: 3,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _salvarMedicamento,
+                child: Text('Salvar Medicamento'),
+              ),
+            ],
+          ),
         ),
       ),
     );

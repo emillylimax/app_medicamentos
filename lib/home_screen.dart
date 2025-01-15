@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -123,86 +124,91 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text('Tela Inicial')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (_profileImage != null)
-              CircleAvatar(
-                radius: 50,
-                backgroundImage: FileImage(_profileImage!),
-              )
-            else
-              CircleAvatar(
-                radius: 50,
-                backgroundImage: NetworkImage(
-                    user?.photoURL ?? 'https://via.placeholder.com/250'),
-              ),
-            SizedBox(height: 20),
-            if (user != null)
-              Text('Bem-vindo(a), ${user.email}!',
-                  style: TextStyle(fontSize: 18))
-            else
-              Text('Você não está logado.', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => CadastroMedicamentosScreen(
-                            onSave: _salvarMedicamento,
-                          )),
-                );
-              },
-              child: Text('Cadastro de Medicamentos'),
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (_profileImage != null)
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage: FileImage(_profileImage!),
+                  )
+                else
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage: NetworkImage(
+                        user?.photoURL ?? 'https://via.placeholder.com/250'),
+                  ),
+                SizedBox(height: 20),
+                if (user != null)
+                  Text('Bem-vindo(a), ${user.email}!',
+                      style: TextStyle(fontSize: 18))
+                else
+                  Text('Você não está logado.', style: TextStyle(fontSize: 18)),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => CadastroMedicamentosScreen(
+                                onSave: _salvarMedicamento,
+                              )),
+                    );
+                  },
+                  child: Text('Cadastro de Medicamentos'),
+                ),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ViewMedicamentosScreen()),
+                    );
+                  },
+                  child: Text('Visualizar Medicamentos'),
+                ),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => AlertasLembretesScreen()),
+                    );
+                  },
+                  child: Text('Alertas e Lembretes'),
+                ),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => HistoricoConsumoScreen()),
+                    );
+                  },
+                  child: Text('Histórico de Consumo'),
+                ),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    _navigateToEditProfile(context);
+                  },
+                  child: Text('Editar Dados do Perfil'),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () => _signOut(context),
+                  child: Text('Sair'),
+                ),
+              ],
             ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ViewMedicamentosScreen()),
-                );
-              },
-              child: Text('Visualizar Medicamentos'),
-            ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => AlertasLembretesScreen()),
-                );
-              },
-              child: Text('Alertas e Lembretes'),
-            ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => HistoricoConsumoScreen()),
-                );
-              },
-              child: Text('Histórico de Consumo'),
-            ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                _navigateToEditProfile(context);
-              },
-              child: Text('Editar Dados do Perfil'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => _signOut(context),
-              child: Text('Sair'),
-            ),
-          ],
+          ),
         ),
       ),
     );
