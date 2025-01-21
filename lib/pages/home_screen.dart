@@ -29,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> _medicamentosTarde = [];
   List<Map<String, dynamic>> _medicamentosNoite = [];
   String? _userName;
+  DateTime _selectedDate = DateTime.now();
 
   @override
   void initState() {
@@ -137,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
     User? user = _auth.currentUser;
     if (user == null) return;
 
-    final diaSemanaAtual = DateTime.now().weekday;
+    final diaSemanaAtual = _selectedDate.weekday;
     final diasSemana = [
       'Domingo',
       'Segunda',
@@ -279,19 +280,32 @@ class _HomeScreenState extends State<HomeScreen> {
         final isToday = date.day == today.day &&
             date.month == today.month &&
             date.year == today.year;
-        return Column(
-          children: [
-            Text(daysOfWeek[date.weekday - 1], style: TextStyle(fontSize: 16)),
-            SizedBox(height: 4),
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: isToday ? Colors.blue : Colors.grey,
-              child: Text(
-                date.day.toString(),
-                style: TextStyle(color: Colors.white),
+        final isSelected = date.day == _selectedDate.day &&
+            date.month == _selectedDate.month &&
+            date.year == _selectedDate.year;
+
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedDate = date;
+              _loadMedicamentosHoje();
+            });
+          },
+          child: Column(
+            children: [
+              Text(daysOfWeek[date.weekday - 1],
+                  style: TextStyle(fontSize: 16)),
+              SizedBox(height: 4),
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: isSelected ? Colors.blue : Colors.grey,
+                child: Text(
+                  date.day.toString(),
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       }).toList(),
     );
@@ -411,13 +425,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         user?.photoURL ?? 'https://via.placeholder.com/250'),
                   ),
                 SizedBox(height: 20),
+                _buildWeekCalendar(),
+                SizedBox(height: 20),
                 if (user != null)
                   Text('Bem-vindo(a), ${_userName ?? user.email}!',
                       style: TextStyle(fontSize: 18))
                 else
                   Text('Você não está logado.', style: TextStyle(fontSize: 18)),
-                SizedBox(height: 20),
-                _buildWeekCalendar(),
                 SizedBox(height: 20),
                 if (_medicamentosManha.isNotEmpty)
                   Column(
