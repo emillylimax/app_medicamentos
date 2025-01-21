@@ -1,8 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -10,9 +11,6 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -30,22 +28,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    final authService = Provider.of<AuthService>(context, listen: false);
+
     try {
-      UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      User? user = userCredential.user;
+      User? user =
+          await authService.registerWithEmailAndPassword(email, password);
       if (user != null) {
-        await _firestore.collection('users').doc(user.uid).set({
-          'name': name,
-          'dob': dob,
-          'email': email,
-        });
-
-        await user.updateDisplayName(name);
+        await authService.updateUserProfile(name: name);
+        await authService.addUserToFirestore(user.uid, name, dob, email);
 
         Navigator.pushReplacementNamed(context, '/home');
       }

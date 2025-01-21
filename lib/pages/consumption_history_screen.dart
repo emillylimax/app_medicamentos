@@ -8,7 +8,11 @@ class HistoricoConsumoScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text('Histórico de Consumo')),
       body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('consumo').snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('consumo')
+            .orderBy('data',
+                descending: true) // Ordenar pela data em ordem decrescente
+            .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
@@ -22,13 +26,12 @@ class HistoricoConsumoScreen extends StatelessWidget {
               var data = consumo['data'];
               DateTime dateTime;
 
-              // Verificar se o campo 'data' é um Timestamp ou String
               if (data is Timestamp) {
                 dateTime = data.toDate();
               } else if (data is String) {
                 dateTime = DateTime.parse(data);
               } else {
-                dateTime = DateTime.now(); // Valor padrão em caso de erro
+                dateTime = DateTime.now();
               }
 
               var formattedDate = DateFormat('dd-MM-yyyy').format(dateTime);

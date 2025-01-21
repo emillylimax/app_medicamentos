@@ -240,11 +240,8 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
         for (DocumentSnapshot doc in medicamentosSnapshot.docs) {
           await doc.reference.delete();
         }
-
-        // Excluir dados do usuário
         await _firestore.collection('users').doc(user.uid).delete();
 
-        // Excluir conta do usuário
         await user.delete();
 
         Navigator.pushReplacementNamed(context, '/');

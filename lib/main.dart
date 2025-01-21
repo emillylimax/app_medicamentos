@@ -1,31 +1,41 @@
+import 'package:app_medicamentos/pages/home_screen.dart';
+import 'package:app_medicamentos/pages/login_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'home_screen.dart';
-import 'login_screen.dart';
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
+import 'services/auth_service.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await Hive.initFlutter();
-  await Hive.openBox('medicamentos');
+  WakelockPlus.enable();
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'App Medicamentos',
-      initialRoute: '/',
-      routes: {
-        '/': (context) => AuthWrapper(),
-        '/home': (context) => HomeScreen(),
-        '/login': (context) => LoginScreen(),
-      },
+    return MultiProvider(
+      providers: [
+        Provider<AuthService>(
+          create: (_) => AuthService(),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'App Medicamentos',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        debugShowCheckedModeBanner: false,
+        initialRoute: '/',
+        routes: {
+          '/': (context) => AuthWrapper(),
+          '/login': (context) => LoginScreen(),
+          '/home': (context) => HomeScreen(),
+        },
+      ),
     );
   }
 }
@@ -33,11 +43,12 @@ class MyApp extends StatelessWidget {
 class AuthWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
     return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
+      stream: authService.authStateChanges,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return Center(child: CircularProgressIndicator());
         } else if (snapshot.hasData) {
           return HomeScreen();
         } else {

@@ -1,5 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../services/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -8,46 +10,54 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
 
-  Future<void> _signInWithEmailPassword() async {
+  Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       _showErrorDialog(
           'Por favor, preencha ambos os campos de e-mail e senha.');
       return;
     }
 
+    setState(() {
+      _isLoading = true;
+    });
+
+    final authService = Provider.of<AuthService>(context, listen: false);
     try {
-      await _auth.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
+      await authService.signInWithEmailAndPassword(
+        _emailController.text,
+        _passwordController.text,
       );
       Navigator.pushReplacementNamed(context, '/home');
-    } on FirebaseAuthException catch (e) {
+    } catch (e) {
       String errorMessage;
-
-      print("Erro de autenticação: ${e.code}, Mensagem: ${e.message}");
-
-      if (e.code == 'user-not-found') {
-        errorMessage =
-            'Este email não está cadastrado. Verifique e tente novamente.';
-      } else if (e.code == 'wrong-password') {
-        errorMessage = 'Senha incorreta. Tente novamente.';
-      } else if (e.code == 'invalid-email') {
-        errorMessage = 'Formato de email inválido. Verifique o e-mail.';
-      } else if (e.code == 'user-disabled') {
-        errorMessage = 'Usuário desabilitado';
-      } else if (e.code == 'too-many-requests') {
-        errorMessage = 'Muitas tentativas. Tente novamente mais tarde';
+      if (e is FirebaseAuthException) {
+        if (e.code == 'user-not-found') {
+          errorMessage =
+              'Este email não está cadastrado. Verifique e tente novamente.';
+        } else if (e.code == 'wrong-password') {
+          errorMessage = 'Senha incorreta. Tente novamente.';
+        } else if (e.code == 'invalid-email') {
+          errorMessage = 'Formato de email inválido. Verifique o e-mail.';
+        } else if (e.code == 'user-disabled') {
+          errorMessage = 'Usuário desabilitado';
+        } else if (e.code == 'too-many-requests') {
+          errorMessage = 'Muitas tentativas. Tente novamente mais tarde';
+        } else {
+          errorMessage = 'Credenciais inválidas ou inexistentes';
+        }
       } else {
-        errorMessage = 'Credenciais inválidas ou inexistentes';
+        errorMessage = 'Erro ao tentar fazer login: ${e.toString()}';
       }
 
       _showErrorDialog(errorMessage);
-    } catch (e) {
-      _showErrorDialog('Erro ao tentar fazer login: ${e.toString()}');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -99,10 +109,12 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: InputDecoration(labelText: 'Senha'),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _signInWithEmailPassword,
-              child: Text('Login'),
-            ),
+            _isLoading
+                ? CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _login,
+                    child: Text('Login'),
+                  ),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(

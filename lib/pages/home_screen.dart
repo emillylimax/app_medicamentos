@@ -1,17 +1,18 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:app_medicamentos/pages/alerts_screen.dart';
+import 'package:app_medicamentos/pages/consumption_history_screen.dart';
+import 'package:app_medicamentos/pages/edit_user_screen.dart';
+import 'package:app_medicamentos/pages/register_meds_screen.dart';
+import 'package:app_medicamentos/pages/view_meds_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'register_meds_screen.dart';
-import 'alerts_screen.dart';
-import 'consumption_history_screen.dart';
-import 'edit_user_screen.dart';
-import 'view_meds_screen.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -129,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } else {
       await _salvarMedicamentoLocalmente(medicamento);
     }
-    _loadMedicamentosHoje(); // Recarregar medicamentos após salvar
+    _loadMedicamentosHoje();
   }
 
   Future<void> _loadMedicamentosHoje() async {
@@ -155,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final medicamentos = snapshot.docs.map((doc) {
       final data = doc.data() as Map<String, dynamic>;
-      data['id'] = doc.id; // Adicionar o ID do documento
+      data['id'] = doc.id;
       return data;
     }).where((medicamento) {
       final frequencia = medicamento['frequencia'] ?? {};
@@ -265,12 +266,132 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildWeekCalendar() {
+    final daysOfWeek = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+    final today = DateTime.now();
+    final startOfWeek = today.subtract(Duration(days: today.weekday % 7));
+    final weekDays =
+        List.generate(7, (index) => startOfWeek.add(Duration(days: index)));
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: weekDays.map((date) {
+        final isToday = date.day == today.day &&
+            date.month == today.month &&
+            date.year == today.year;
+        return Column(
+          children: [
+            Text(daysOfWeek[date.weekday % 7], style: TextStyle(fontSize: 16)),
+            SizedBox(height: 4),
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: isToday ? Colors.blue : Colors.grey,
+              child: Text(
+                date.day.toString(),
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     User? user = _auth.currentUser;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Tela Inicial')),
+      appBar: AppBar(
+        title: Text('Tela Inicial'),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.add),
+              title: Text('Cadastro de Medicamentos'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CadastroMedicamentosScreen(
+                      onSave: _salvarMedicamento,
+                    ),
+                  ),
+                ).then((_) => _loadMedicamentosHoje());
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.view_list),
+              title: Text('Visualizar Medicamentos'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ViewMedicamentosScreen(),
+                  ),
+                ).then((_) => _loadMedicamentosHoje());
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.alarm),
+              title: Text('Alertas e Lembretes'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AlertasLembretesScreen(),
+                  ),
+                ).then((_) => _loadMedicamentosHoje());
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.history),
+              title: Text('Histórico de Consumo'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HistoricoConsumoScreen(),
+                  ),
+                ).then((_) => _loadMedicamentosHoje());
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.edit),
+              title: Text('Editar Dados do Perfil'),
+              onTap: () {
+                _navigateToEditProfile(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.exit_to_app),
+              title: Text('Sair'),
+              onTap: () => _signOut(context),
+            ),
+          ],
+        ),
+      ),
       body: SingleChildScrollView(
         child: Center(
           child: Padding(
@@ -289,6 +410,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     backgroundImage: NetworkImage(
                         user?.photoURL ?? 'https://via.placeholder.com/250'),
                   ),
+                SizedBox(height: 20),
+                _buildWeekCalendar(),
                 SizedBox(height: 20),
                 if (user != null)
                   Text('Bem-vindo(a), ${_userName ?? user.email}!',
@@ -340,8 +463,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           builder: (context) => CadastroMedicamentosScreen(
                                 onSave: _salvarMedicamento,
                               )),
-                    ).then((_) =>
-                        _loadMedicamentosHoje()); // Recarregar após voltar
+                    ).then((_) => _loadMedicamentosHoje());
                   },
                   child: Text('Cadastro de Medicamentos'),
                 ),
@@ -352,8 +474,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => ViewMedicamentosScreen()),
-                    ).then((_) =>
-                        _loadMedicamentosHoje()); // Recarregar após voltar
+                    ).then((_) => _loadMedicamentosHoje());
                   },
                   child: Text('Visualizar Medicamentos'),
                 ),
@@ -364,8 +485,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => AlertasLembretesScreen()),
-                    ).then((_) =>
-                        _loadMedicamentosHoje()); // Recarregar após voltar
+                    ).then((_) => _loadMedicamentosHoje());
                   },
                   child: Text('Alertas e Lembretes'),
                 ),
@@ -376,8 +496,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => HistoricoConsumoScreen()),
-                    ).then((_) =>
-                        _loadMedicamentosHoje()); // Recarregar após voltar
+                    ).then((_) => _loadMedicamentosHoje());
                   },
                   child: Text('Histórico de Consumo'),
                 ),
