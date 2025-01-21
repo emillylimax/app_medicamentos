@@ -269,7 +269,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildWeekCalendar() {
     final daysOfWeek = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
     final today = DateTime.now();
-    final startOfWeek = today.subtract(Duration(days: today.weekday % 7));
+    final startOfWeek = today.subtract(Duration(days: today.weekday - 1));
     final weekDays =
         List.generate(7, (index) => startOfWeek.add(Duration(days: index)));
 
@@ -281,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
             date.year == today.year;
         return Column(
           children: [
-            Text(daysOfWeek[date.weekday % 7], style: TextStyle(fontSize: 16)),
+            Text(daysOfWeek[date.weekday - 1], style: TextStyle(fontSize: 16)),
             SizedBox(height: 4),
             CircleAvatar(
               radius: 20,
@@ -411,13 +411,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         user?.photoURL ?? 'https://via.placeholder.com/250'),
                   ),
                 SizedBox(height: 20),
-                _buildWeekCalendar(),
-                SizedBox(height: 20),
                 if (user != null)
                   Text('Bem-vindo(a), ${_userName ?? user.email}!',
                       style: TextStyle(fontSize: 18))
                 else
                   Text('Você não está logado.', style: TextStyle(fontSize: 18)),
+                SizedBox(height: 20),
+                _buildWeekCalendar(),
                 SizedBox(height: 20),
                 if (_medicamentosManha.isNotEmpty)
                   Column(
@@ -454,64 +454,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     _medicamentosNoite.isEmpty)
                   Text('Nenhum medicamento marcado para hoje.',
                       style: TextStyle(fontSize: 18)),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => CadastroMedicamentosScreen(
-                                onSave: _salvarMedicamento,
-                              )),
-                    ).then((_) => _loadMedicamentosHoje());
-                  },
-                  child: Text('Cadastro de Medicamentos'),
-                ),
-                SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ViewMedicamentosScreen()),
-                    ).then((_) => _loadMedicamentosHoje());
-                  },
-                  child: Text('Visualizar Medicamentos'),
-                ),
-                SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => AlertasLembretesScreen()),
-                    ).then((_) => _loadMedicamentosHoje());
-                  },
-                  child: Text('Alertas e Lembretes'),
-                ),
-                SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => HistoricoConsumoScreen()),
-                    ).then((_) => _loadMedicamentosHoje());
-                  },
-                  child: Text('Histórico de Consumo'),
-                ),
-                SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    _navigateToEditProfile(context);
-                  },
-                  child: Text('Editar Dados do Perfil'),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () => _signOut(context),
-                  child: Text('Sair'),
-                ),
               ],
             ),
           ),
