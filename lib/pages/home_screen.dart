@@ -10,7 +10,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 
@@ -30,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> _medicamentosNoite = [];
   String? _userName;
   DateTime _selectedDate = DateTime.now();
+  Map<String, Map<String, dynamic>> _medicamentoStatus = {};
 
   @override
   void initState() {
@@ -185,6 +185,25 @@ class _HomeScreenState extends State<HomeScreen> {
         final hour = int.parse(timeParts[0]);
         final minute = int.parse(timeParts[1]);
 
+        final agora = DateTime.now();
+        final dataFormatada = DateFormat('yyyy-MM-dd').format(agora);
+        final horarioMedicamento =
+            DateTime(agora.year, agora.month, agora.day, hour, minute);
+
+        if (agora.isAfter(horarioMedicamento) &&
+            (_medicamentoStatus[medicamento['id']] == null ||
+                _medicamentoStatus[medicamento['id']]![dataFormatada] == null ||
+                _medicamentoStatus[medicamento['id']]![dataFormatada]![
+                        horario] ==
+                    null)) {
+          _medicamentoStatus[medicamento['id']] ??= {};
+          _medicamentoStatus[medicamento['id']]![dataFormatada] ??= {};
+          _medicamentoStatus[medicamento['id']]![dataFormatada]![horario] = {
+            'status': false,
+            'horarioTomado': null,
+          };
+        }
+
         if (hour >= 1 && hour < 12) {
           _medicamentosManha.add({...medicamento, 'horario': horario});
         } else if (hour >= 12 && hour < 18) {
@@ -216,50 +235,116 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _marcarComoTomado(String medicamentoId) async {
-    await FirebaseFirestore.instance
+  Future<void> _marcarComoTomado(String medicamentoId, String horario) async {
+    final medicamentoRef = FirebaseFirestore.instance
         .collection('medicamentos')
-        .doc(medicamentoId)
-        .update({'tomado': true});
+        .doc(medicamentoId);
+
+    final medicamentoSnapshot = await medicamentoRef.get();
+    final medicamentoData = medicamentoSnapshot.data() as Map<String, dynamic>;
+
+    final agora = DateTime.now();
+    final dataFormatada = DateFormat('yyyy-MM-dd').format(agora);
+    final horarioTomado = DateFormat('HH:mm').format(agora);
+
+    final horariosTomados =
+        List<String>.from(medicamentoData['horariosTomados'] ?? []);
+    horariosTomados.add("$dataFormatada $horario");
+
+    await medicamentoRef.update({
+      'horariosTomados': horariosTomados,
+    });
+
     await FirebaseFirestore.instance.collection('consumo').add({
       'medicamentoId': medicamentoId,
-      'nome': _medicamentosHoje
-          .firstWhere((med) => med['id'] == medicamentoId)['nome'],
-      'data': DateTime.now().toIso8601String(),
+      'nome': medicamentoData['nome'],
+      'horario': horario,
+      'data': agora.toIso8601String(),
     });
-    _loadMedicamentosHoje();
+
+    setState(() {
+      if (_medicamentoStatus[medicamentoId] == null) {
+        _medicamentoStatus[medicamentoId] = {};
+      }
+      if (_medicamentoStatus[medicamentoId]![dataFormatada] == null) {
+        _medicamentoStatus[medicamentoId]![dataFormatada] = {};
+      }
+      _medicamentoStatus[medicamentoId]![dataFormatada]![horario] = {
+        'status': true,
+        'horarioTomado': horarioTomado,
+      };
+    });
   }
 
-  Future<void> _marcarComoNaoTomado(String medicamentoId) async {
-    await FirebaseFirestore.instance
+  Future<void> _marcarComoNaoTomado(
+      String medicamentoId, String horario) async {
+    final medicamentoRef = FirebaseFirestore.instance
         .collection('medicamentos')
-        .doc(medicamentoId)
-        .update({'tomado': false});
-    _loadMedicamentosHoje();
+        .doc(medicamentoId);
+
+    final medicamentoSnapshot = await medicamentoRef.get();
+    final medicamentoData = medicamentoSnapshot.data() as Map<String, dynamic>;
+
+    final hoje = DateTime.now();
+    final dataFormatada = DateFormat('yyyy-MM-dd').format(hoje);
+
+    final horariosTomados =
+        List<String>.from(medicamentoData['horariosTomados'] ?? []);
+    horariosTomados.remove("$dataFormatada $horario");
+
+    await medicamentoRef.update({
+      'horariosTomados': horariosTomados,
+    });
+
+    setState(() {
+      if (_medicamentoStatus[medicamentoId] == null) {
+        _medicamentoStatus[medicamentoId] = {};
+      }
+      if (_medicamentoStatus[medicamentoId]![dataFormatada] == null) {
+        _medicamentoStatus[medicamentoId]![dataFormatada] = {};
+      }
+      _medicamentoStatus[medicamentoId]![dataFormatada]![horario] = {
+        'status': false,
+        'horarioTomado': null,
+      };
+    });
   }
 
   Widget _buildMedicamentoCard(Map<String, dynamic> medicamento) {
     final nome = medicamento['nome'] ?? 'Sem Nome';
     final dosagem = medicamento['dosagem'] ?? 'Sem Dosagem';
-    final frequencia = medicamento['frequencia'] ?? {};
-    final horarios = List<String>.from(frequencia['horarios'] ?? []);
-    final horariosFormatados = horarios.join(', ');
+    final horario = medicamento['horario'] ?? 'Sem Horário';
+    final dataFormatada = DateFormat('yyyy-MM-dd').format(_selectedDate);
+
+    final statusData =
+        _medicamentoStatus[medicamento['id']]?[dataFormatada]?[horario];
+    final status = statusData?['status'];
+    final horarioTomado = statusData?['horarioTomado'];
+    final cardColor = status == true
+        ? Colors.green[100]
+        : status == false
+            ? Colors.red[100]
+            : Colors.white;
 
     return Card(
+      color: cardColor,
       margin: EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
         title: Text(nome, style: TextStyle(fontSize: 18)),
-        subtitle: Text('Dosagem: $dosagem\nHorários: $horariosFormatados'),
+        subtitle: Text('Dosagem: $dosagem\nHorário: $horario' +
+            (horarioTomado != null
+                ? '\nHorário que tomou: $horarioTomado'
+                : '')),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
               icon: Icon(Icons.check_circle, color: Colors.green),
-              onPressed: () => _marcarComoTomado(medicamento['id']),
+              onPressed: () => _marcarComoTomado(medicamento['id'], horario),
             ),
             IconButton(
               icon: Icon(Icons.cancel, color: Colors.red),
-              onPressed: () => _marcarComoNaoTomado(medicamento['id']),
+              onPressed: () => _marcarComoNaoTomado(medicamento['id'], horario),
             ),
           ],
         ),
