@@ -296,6 +296,16 @@ class _HomeScreenState extends State<HomeScreen> {
       'horariosTomados': horariosTomados,
     });
 
+    final consumoSnapshot = await FirebaseFirestore.instance
+        .collection('consumo')
+        .where('medicamentoId', isEqualTo: medicamentoId)
+        .where('horario', isEqualTo: horario)
+        .get();
+
+    for (var doc in consumoSnapshot.docs) {
+      await doc.reference.delete();
+    }
+
     setState(() {
       if (_medicamentoStatus[medicamentoId] == null) {
         _medicamentoStatus[medicamentoId] = {};
