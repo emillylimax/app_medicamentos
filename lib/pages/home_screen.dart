@@ -360,6 +360,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final nome = medicamento['nome'] ?? 'Sem Nome';
     final dosagem = medicamento['dosagem'] ?? 'Sem Dosagem';
     final horario = medicamento['horario'] ?? 'Sem Horário';
+    final observacoes = medicamento['observacoes'] ?? 'Sem Observações';
     final dataFormatada = DateFormat('yyyy-MM-dd').format(_selectedDate);
 
     final statusData =
@@ -377,10 +378,11 @@ class _HomeScreenState extends State<HomeScreen> {
       margin: EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
         title: Text(nome, style: TextStyle(fontSize: 18)),
-        subtitle: Text('Dosagem: $dosagem\nHorário: $horario' +
-            (horarioTomado != null
-                ? '\nHorário que tomou: $horarioTomado'
-                : '')),
+        subtitle: Text(
+            'Dosagem: $dosagem\nHorário: $horario\nObservações: $observacoes' +
+                (horarioTomado != null
+                    ? '\nHorário que tomou: $horarioTomado'
+                    : '')),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -544,13 +546,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         user?.photoURL ?? 'https://via.placeholder.com/250'),
                   ),
                 SizedBox(height: 20),
-                _buildWeekCalendar(),
-                SizedBox(height: 20),
                 if (user != null)
                   Text('Bem-vindo(a), ${_userName ?? user.email}!',
                       style: TextStyle(fontSize: 18))
                 else
                   Text('Você não está logado.', style: TextStyle(fontSize: 18)),
+                SizedBox(height: 20),
+                _buildWeekCalendar(),
                 SizedBox(height: 20),
                 if (_medicamentosManha.isNotEmpty)
                   Column(
