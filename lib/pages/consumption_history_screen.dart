@@ -10,8 +10,7 @@ class HistoricoConsumoScreen extends StatelessWidget {
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('consumo')
-            .orderBy('data',
-                descending: true) // Ordenar pela data em ordem decrescente
+            .orderBy('data', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {

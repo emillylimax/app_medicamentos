@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:app_medicamentos/pages/alerts_screen.dart';
 import 'package:app_medicamentos/pages/consumption_history_screen.dart';
 import 'package:app_medicamentos/pages/edit_user_screen.dart';
 import 'package:app_medicamentos/pages/register_meds_screen.dart';
@@ -12,6 +11,8 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:app_medicamentos/services/notification_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -30,12 +31,15 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _userName;
   DateTime _selectedDate = DateTime.now();
   Map<String, Map<String, dynamic>> _medicamentoStatus = {};
+  final NotificationService _notificationService = NotificationService();
 
   @override
   void initState() {
     super.initState();
     _loadProfileImage();
     _initializeHive();
+    _notificationService.initializeNotifications();
+    FirebaseMessaging.instance.subscribeToTopic('medication_reminders');
     _connectivitySubscription = Connectivity()
         .onConnectivityChanged
         .listen((List<ConnectivityResult> results) {
@@ -168,6 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _medicamentosHoje = medicamentos;
       _categorizarMedicamentos();
+      _scheduleNotifications();
     });
   }
 
@@ -217,6 +222,28 @@ class _HomeScreenState extends State<HomeScreen> {
     _medicamentosManha.sort((a, b) => a['horario'].compareTo(b['horario']));
     _medicamentosTarde.sort((a, b) => a['horario'].compareTo(b['horario']));
     _medicamentosNoite.sort((a, b) => a['horario'].compareTo(b['horario']));
+  }
+
+  void _scheduleNotifications() {
+    int notificationId = 0;
+    for (var medicamento in _medicamentosHoje) {
+      final frequencia = medicamento['frequencia'] ?? {};
+      final horarios = List<String>.from(frequencia['horarios'] ?? []);
+      for (var horario in horarios) {
+        final timeParts = horario.split(':');
+        final hour = int.parse(timeParts[0]);
+        final minute = int.parse(timeParts[1]);
+        final scheduledTime = DateTime(_selectedDate.year, _selectedDate.month,
+            _selectedDate.day, hour, minute);
+        debugPrint(
+            'Agendando notificação para: ${medicamento['nome']} às $scheduledTime');
+        _notificationService.scheduleNotification(
+            notificationId++,
+            'Lembrete de Medicamento',
+            'Está na hora de tomar o seu medicamento: ${medicamento['nome']}',
+            scheduledTime);
+      }
+    }
   }
 
   Future<void> _signOut(BuildContext context) async {
@@ -458,18 +485,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => ViewMedicamentosScreen(),
-                  ),
-                ).then((_) => _loadMedicamentosHoje());
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.alarm),
-              title: Text('Alertas e Lembretes'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AlertasLembretesScreen(),
                   ),
                 ).then((_) => _loadMedicamentosHoje());
               },
