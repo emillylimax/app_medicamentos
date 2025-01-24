@@ -9,6 +9,7 @@ import 'services/auth_service.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:app_medicamentos/services/notification_service.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -19,6 +20,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  await AndroidAlarmManager.initialize();
   WakelockPlus.enable();
   _requestPermissions();
   _getToken();

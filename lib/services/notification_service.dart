@@ -3,6 +3,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 class NotificationService {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -25,10 +26,11 @@ class NotificationService {
       },
     );
 
-    // Solicitar permissão para alarmes exatos
     if (await Permission.scheduleExactAlarm.isDenied) {
       await Permission.scheduleExactAlarm.request();
     }
+
+    await AndroidAlarmManager.initialize();
   }
 
   Future<void> scheduleNotification(
@@ -57,13 +59,48 @@ class NotificationService {
             UILocalNotificationDateInterpretation.absoluteTime,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
+
+      await AndroidAlarmManager.oneShotAt(
+        scheduledTime,
+        id,
+        _triggerAlarm,
+        exact: true,
+        wakeup: true,
+      );
     } on PlatformException catch (e) {
       if (e.code == 'exact_alarms_not_permitted') {
-        // Solicitar permissão para alarmes exatos
         if (await Permission.scheduleExactAlarm.isDenied) {
           await Permission.scheduleExactAlarm.request();
         }
       }
     }
+  }
+
+  static Future<void> _triggerAlarm(int id) async {
+    final NotificationService _notificationService = NotificationService();
+    _notificationService.showNotification(
+        id, 'Alarme de Medicamento', 'Está na hora de tomar o seu medicamento');
+  }
+
+  Future<void> showNotification(int id, String title, String body) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'your_channel_id',
+      'your_channel_name',
+      channelDescription: 'your_channel_description',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: false,
+    );
+
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+      id,
+      title,
+      body,
+      platformChannelSpecifics,
+    );
   }
 }

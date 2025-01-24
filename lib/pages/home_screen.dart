@@ -13,6 +13,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:app_medicamentos/services/notification_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -242,8 +243,16 @@ class _HomeScreenState extends State<HomeScreen> {
             'Lembrete de Medicamento',
             'Está na hora de tomar o seu medicamento: ${medicamento['nome']}',
             scheduledTime);
+        AndroidAlarmManager.oneShotAt(
+            scheduledTime, notificationId, _triggerAlarm);
       }
     }
+  }
+
+  static Future<void> _triggerAlarm(int id) async {
+    final NotificationService _notificationService = NotificationService();
+    _notificationService.showNotification(
+        id, 'Alarme de Medicamento', 'Está na hora de tomar o seu medicamento');
   }
 
   Future<void> _signOut(BuildContext context) async {
