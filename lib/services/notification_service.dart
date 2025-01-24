@@ -4,6 +4,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 
 class NotificationService {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -80,6 +81,7 @@ class NotificationService {
     final NotificationService _notificationService = NotificationService();
     _notificationService.showNotification(
         id, 'Alarme de Medicamento', 'Está na hora de tomar o seu medicamento');
+    await FlutterRingtonePlayer().playAlarm();
   }
 
   Future<void> showNotification(int id, String title, String body) async {
