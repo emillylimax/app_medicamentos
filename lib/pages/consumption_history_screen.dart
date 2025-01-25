@@ -89,12 +89,32 @@ class _HistoricoConsumoScreenState extends State<HistoricoConsumoScreen> {
                     var formattedTime = DateFormat('HH:mm').format(dateTime);
 
                     return Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
                       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       child: ListTile(
+                        leading:
+                            Icon(Icons.medical_services, color: Colors.blue),
                         title: Text(consumo['nome'],
-                            style: TextStyle(fontSize: 18)),
-                        subtitle:
-                            Text('Tomado: $formattedDate às $formattedTime'),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            )),
+                        subtitle: RichText(
+                          text: TextSpan(
+                            style: TextStyle(color: Colors.white),
+                            children: [
+                              TextSpan(
+                                text: 'Tomado: ',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              TextSpan(
+                                text: '$formattedDate às $formattedTime',
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     );
                   },
