@@ -53,7 +53,24 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'App Medicamentos',
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          brightness: Brightness.dark,
+          primaryColor: Colors.black,
+          scaffoldBackgroundColor: Colors.black,
+          appBarTheme: AppBarTheme(
+            backgroundColor: Colors.black,
+          ),
+          buttonTheme: ButtonThemeData(
+            buttonColor: Colors.black,
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+            ),
+          ),
+          textTheme: TextTheme(
+            bodyLarge: TextStyle(color: Colors.white),
+            bodyMedium: TextStyle(color: Colors.white),
+          ),
         ),
         debugShowCheckedModeBanner: false,
         initialRoute: '/',

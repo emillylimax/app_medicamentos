@@ -368,10 +368,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final status = statusData?['status'];
     final horarioTomado = statusData?['horarioTomado'];
     final cardColor = status == true
-        ? Colors.green[100]
+        ? const Color.fromARGB(255, 67, 135, 69)
         : status == false
-            ? Colors.red[100]
-            : Colors.white;
+            ? const Color.fromARGB(255, 194, 99, 109)
+            : Colors.grey[800];
 
     String subtitleText = 'Dosagem: $dosagem\nHorário: $horario';
     if (observacoes != null && observacoes.isNotEmpty) {
@@ -385,17 +385,63 @@ class _HomeScreenState extends State<HomeScreen> {
       color: cardColor,
       margin: EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
-        title: Text(nome, style: TextStyle(fontSize: 18)),
-        subtitle: Text(subtitleText),
+        title: Text(
+          nome,
+          style: TextStyle(
+              fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        subtitle: RichText(
+          text: TextSpan(
+            style: TextStyle(fontSize: 14, color: Colors.white),
+            children: [
+              TextSpan(
+                text: 'Dosagem: ',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              TextSpan(
+                text: dosagem,
+              ),
+              TextSpan(
+                text: '\nHorário: ',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              TextSpan(
+                text: horario,
+              ),
+              if (observacoes != null && observacoes.isNotEmpty) ...[
+                TextSpan(
+                  text: '\nObservações: ',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                TextSpan(
+                  text: observacoes,
+                ),
+              ],
+              if (horarioTomado != null) ...[
+                TextSpan(
+                  text: '\nHorário que tomou: ',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                TextSpan(
+                  text: horarioTomado,
+                ),
+              ],
+            ],
+          ),
+        ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: Icon(Icons.check_circle, color: Colors.green),
+              icon: Icon(Icons.check,
+                  color: const Color.fromARGB(255, 118, 221, 121)),
+              iconSize: 30,
               onPressed: () => _marcarComoTomado(medicamento['id'], horario),
             ),
             IconButton(
-              icon: Icon(Icons.cancel, color: Colors.red),
+              icon: Icon(Icons.close,
+                  color: const Color.fromARGB(255, 192, 20, 7)),
+              iconSize: 30,
               onPressed: () => _marcarComoNaoTomado(medicamento['id'], horario),
             ),
           ],
@@ -454,7 +500,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tela Inicial'),
         leading: Builder(
           builder: (context) => IconButton(
             icon: Icon(Icons.menu),
@@ -468,14 +513,26 @@ class _HomeScreenState extends State<HomeScreen> {
           children: <Widget>[
             DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.blue,
+                color: Colors.grey[850],
               ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/logo.png',
+                    width: 100,
+                    height: 100,
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Lembrete de Medicamentos',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ),
             ListTile(
@@ -518,7 +575,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ListTile(
               leading: Icon(Icons.edit),
-              title: Text('Editar Dados do Perfil'),
+              title: Text('Editar Perfil'),
               onTap: () {
                 _navigateToEditProfile(context);
               },
