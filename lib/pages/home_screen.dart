@@ -388,7 +388,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(
           nome,
           style: TextStyle(
-              fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+              fontSize: 19, color: Colors.white, fontWeight: FontWeight.bold),
         ),
         subtitle: RichText(
           text: TextSpan(
