@@ -360,7 +360,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final nome = medicamento['nome'] ?? 'Sem Nome';
     final dosagem = medicamento['dosagem'] ?? 'Sem Dosagem';
     final horario = medicamento['horario'] ?? 'Sem Horário';
-    final observacoes = medicamento['observacoes'] ?? 'Sem Observações';
+    final observacoes = medicamento['observacoes'];
     final dataFormatada = DateFormat('yyyy-MM-dd').format(_selectedDate);
 
     final statusData =
@@ -373,16 +373,20 @@ class _HomeScreenState extends State<HomeScreen> {
             ? Colors.red[100]
             : Colors.white;
 
+    String subtitleText = 'Dosagem: $dosagem\nHorário: $horario';
+    if (observacoes != null && observacoes.isNotEmpty) {
+      subtitleText += '\nObservações: $observacoes';
+    }
+    if (horarioTomado != null) {
+      subtitleText += '\nHorário que tomou: $horarioTomado';
+    }
+
     return Card(
       color: cardColor,
       margin: EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
         title: Text(nome, style: TextStyle(fontSize: 18)),
-        subtitle: Text(
-            'Dosagem: $dosagem\nHorário: $horario\nObservações: $observacoes' +
-                (horarioTomado != null
-                    ? '\nHorário que tomou: $horarioTomado'
-                    : '')),
+        subtitle: Text(subtitleText),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
