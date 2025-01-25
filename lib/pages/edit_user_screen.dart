@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:hive/hive.dart';
+import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'dart:io';
 
 class EditarPerfilScreen extends StatefulWidget {
@@ -18,7 +19,8 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   final TextEditingController _nomeController = TextEditingController();
-  final TextEditingController _dobController = TextEditingController();
+  final MaskedTextController _dobController =
+      MaskedTextController(mask: '00/00/0000');
   final TextEditingController _emailController = TextEditingController();
 
   File? _imageFile;
