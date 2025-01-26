@@ -49,6 +49,11 @@ class NotificationService {
     const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
+    // Verificar se a data agendada é no futuro
+    if (scheduledTime.isBefore(DateTime.now())) {
+      throw ArgumentError('scheduledTime must be a date in the future');
+    }
+
     try {
       await flutterLocalNotificationsPlugin.zonedSchedule(
         id,

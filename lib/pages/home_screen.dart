@@ -14,6 +14,8 @@ import 'package:intl/intl.dart';
 import 'package:app_medicamentos/services/notification_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:app_medicamentos/pages/register_health_info_screen.dart';
+import 'package:app_medicamentos/pages/health_info_history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -279,6 +281,11 @@ class _HomeScreenState extends State<HomeScreen> {
         final minute = int.parse(timeParts[1]);
         final scheduledTime = DateTime(_selectedDate.year, _selectedDate.month,
             _selectedDate.day, hour, minute);
+
+        // Verificar se a data agendada é no futuro
+        if (scheduledTime.isBefore(DateTime.now())) {
+          continue;
+        }
 
         final dataFormatada = DateFormat('yyyy-MM-dd').format(_selectedDate);
         final statusData =
@@ -650,7 +657,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ListTile(
               leading: Icon(Icons.add),
-              title: Text('Cadastro de Medicamentos'),
+              title: Text('Cadastrar Medicamentos'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -691,6 +698,30 @@ class _HomeScreenState extends State<HomeScreen> {
               title: Text('Editar Perfil'),
               onTap: () {
                 _navigateToEditProfile(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.favorite),
+              title: Text('Registrar Informações de Saúde'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RegisterHealthInfoScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.show_chart),
+              title: Text('Informações de Saúde'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HealthInfoHistoryScreen(),
+                  ),
+                );
               },
             ),
             ListTile(

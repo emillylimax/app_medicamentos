@@ -30,6 +30,7 @@ dependencies:
   android_alarm_manager_plus: ^4.0.6
   flutter_ringtone_player: ^4.0.0+3
   flutter_masked_text2: ^0.9.1
+  fl_chart: ^0.70.2
 #  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
