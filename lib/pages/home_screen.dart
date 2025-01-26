@@ -16,6 +16,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:app_medicamentos/pages/register_health_info_screen.dart';
 import 'package:app_medicamentos/pages/health_info_history_screen.dart';
+import 'package:app_medicamentos/pages/medical_documents_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -715,6 +716,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => HealthInfoHistoryScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.file_copy),
+              title: Text('Exames e Receitas'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MedicalDocumentsScreen(),
                   ),
                 );
               },
