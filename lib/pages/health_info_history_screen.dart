@@ -35,7 +35,6 @@ class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
       _calculateDailyData();
     });
 
-    // Log para depuração
     debugPrint('Health Info List: $_healthInfoList');
   }
 
@@ -74,7 +73,6 @@ class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
       }
     }
 
-    // Log para depuração
     debugPrint('Daily Data: $_dailyData');
   }
 
@@ -89,6 +87,22 @@ class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
     return mode;
   }
 
+  String _getUnit(String field) {
+    switch (field) {
+      case 'systolic':
+      case 'diastolic':
+        return 'mmHg';
+      case 'heartRate':
+        return 'bpm';
+      case 'glucose':
+        return 'mg/dL';
+      case 'weight':
+        return 'kg';
+      default:
+        return '';
+    }
+  }
+
   Widget _buildHealthInfoCard(
       String title, List<Map<String, dynamic>> data, String field) {
     final days = _dailyData[field]?.keys.toList() ?? [];
@@ -96,8 +110,8 @@ class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
       final values = _dailyData[field]?[day] ?? [];
       return _calculateMode(values);
     }).toList();
+    final unit = _getUnit(field);
 
-    // Log para depuração
     debugPrint('Days: $days');
     debugPrint('Modes: $modes');
 
@@ -108,11 +122,36 @@ class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         children: [
           ...data.map((info) {
-            final timestamp = info['timestamp'];
+            final timestamp = DateTime.parse(info['timestamp']);
+            final formattedDate = DateFormat('dd-MM-yyyy').format(timestamp);
+            final formattedTime = DateFormat('HH:mm').format(timestamp);
             final value = info['value'];
-            return ListTile(
-              title: Text('Data/Hora: $timestamp'),
-              subtitle: Text('Valor: $value'),
+            return Card(
+              color: const Color.fromARGB(255, 44, 44, 44),
+              margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+              child: ListTile(
+                title: Center(
+                  child: Text(
+                    '$value $unit',
+                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                subtitle: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Data: $formattedDate',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.grey),
+                    ),
+                    Text(
+                      'Hora: $formattedTime',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
             );
           }).toList(),
           Padding(
@@ -131,7 +170,7 @@ class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
                           final index = entry.key;
                           final day = entry.value;
                           return Text(
-                              '$day: ${modes[index].toStringAsFixed(2)}');
+                              '$day: ${modes[index].toStringAsFixed(2)} $unit');
                         }).toList(),
                       ),
                       actions: [
@@ -186,7 +225,6 @@ class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
             (info) => {'timestamp': info['timestamp'], 'value': info['weight']})
         .toList();
 
-    // Log para depuração
     debugPrint('Systolic Data: $systolicData');
     debugPrint('Diastolic Data: $diastolicData');
     debugPrint('Heart Rate Data: $heartRateData');

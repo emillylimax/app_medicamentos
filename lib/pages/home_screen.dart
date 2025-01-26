@@ -282,7 +282,6 @@ class _HomeScreenState extends State<HomeScreen> {
         final scheduledTime = DateTime(_selectedDate.year, _selectedDate.month,
             _selectedDate.day, hour, minute);
 
-        // Verificar se a data agendada é no futuro
         if (scheduledTime.isBefore(DateTime.now())) {
           continue;
         }
@@ -305,7 +304,6 @@ class _HomeScreenState extends State<HomeScreen> {
           AndroidAlarmManager.oneShotAt(
               scheduledTime, notificationId, _triggerAlarm);
 
-          // Atualizar o campo notificationId no Firebase
           FirebaseFirestore.instance
               .collection('medicamentos')
               .doc(medicamento['id'])
@@ -415,12 +413,10 @@ class _HomeScreenState extends State<HomeScreen> {
       };
     });
 
-    // Cancelar notificações específicas para o medicamento tomado
     final notificationId = _generateNotificationId(medicamentoId, horario);
     _notificationService.cancelNotification(notificationId);
     debugPrint('Cancelando notificação com ID: $notificationId');
 
-    // Atualizar o campo notificationId no Firebase
     await medicamentoRef.update({
       'notificationId': FieldValue.arrayRemove([notificationId])
     });
@@ -428,7 +424,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   int _generateNotificationId(String medicamentoId, String horario) {
-    // Gerar um ID único para a notificação com base no ID do medicamento e horário
     return medicamentoId.hashCode ^ horario.hashCode;
   }
 
