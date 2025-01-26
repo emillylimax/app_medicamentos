@@ -60,7 +60,7 @@ class _MedicalDocumentsScreenState extends State<MedicalDocumentsScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(index != null ? 'Editar' : 'Adicionar'),
+          // title: Text(index != null ? 'Editar' : 'Adicionar'),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               return Column(
@@ -102,28 +102,35 @@ class _MedicalDocumentsScreenState extends State<MedicalDocumentsScreen> {
                   if (selectedFile != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 10),
-                      child: Image.file(selectedFile!, height: 300),
+                      child: Image.file(selectedFile!, height: 320),
                     ),
                 ],
               );
             },
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancelar'),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  if (titleController.text.isNotEmpty && selectedFile != null) {
+                    Navigator.pop(context, {
+                      'title': titleController.text,
+                      'type': selectedType,
+                      'file': selectedFile,
+                    });
+                  }
+                },
+                child: Text('Salvar'),
+              ),
             ),
-            TextButton(
-              onPressed: () {
-                if (titleController.text.isNotEmpty && selectedFile != null) {
-                  Navigator.pop(context, {
-                    'title': titleController.text,
-                    'type': selectedType,
-                    'file': selectedFile,
-                  });
-                }
-              },
-              child: Text('Salvar'),
+            Center(
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                ),
+                child: Text('Cancelar'),
+              ),
             ),
           ],
         );
