@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:hive/hive.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MedicalDocumentsScreen extends StatefulWidget {
   @override
@@ -15,6 +16,7 @@ class _MedicalDocumentsScreenState extends State<MedicalDocumentsScreen> {
   List<Map<String, dynamic>> _documents = [];
   String _filterType = 'Todos';
   late Box _documentsBox;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
@@ -29,7 +31,11 @@ class _MedicalDocumentsScreenState extends State<MedicalDocumentsScreen> {
   }
 
   Future<void> _loadDocuments() async {
-    final documents = _documentsBox.values.toList();
+    User? user = _auth.currentUser;
+    if (user == null) return;
+
+    final documents =
+        _documentsBox.values.where((doc) => doc['uid'] == user.uid).toList();
     setState(() {
       _documents = documents.map((doc) {
         final file = File(doc['path']);
@@ -125,6 +131,9 @@ class _MedicalDocumentsScreenState extends State<MedicalDocumentsScreen> {
     );
 
     if (result != null) {
+      User? user = _auth.currentUser;
+      if (user == null) return;
+
       final directory = await getApplicationDocumentsDirectory();
       final documentsDir = Directory('${directory.path}/medical_documents');
       if (!await documentsDir.exists()) {
@@ -136,6 +145,7 @@ class _MedicalDocumentsScreenState extends State<MedicalDocumentsScreen> {
       await result['file'].copy(path);
 
       final documentData = {
+        'uid': user.uid,
         'path': path,
         'title': result['title'],
         'type': result['type'],
