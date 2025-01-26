@@ -68,6 +68,14 @@ class NotificationService {
         exact: true,
         wakeup: true,
       );
+
+      await AndroidAlarmManager.oneShotAt(
+        scheduledTime.add(Duration(minutes: 30)),
+        id + 1,
+        _triggerReminder,
+        exact: true,
+        wakeup: true,
+      );
     } on PlatformException catch (e) {
       if (e.code == 'exact_alarms_not_permitted') {
         if (await Permission.scheduleExactAlarm.isDenied) {
@@ -97,8 +105,7 @@ class NotificationService {
         id,
         title,
         body,
-        // RepeatInterval.everyMinute,
-        RepeatInterval.hourly,
+        RepeatInterval.everyMinute,
         platformChannelSpecifics,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
@@ -116,6 +123,12 @@ class NotificationService {
     _notificationService.showNotification(
         id, 'Alarme de Medicamento', 'Está na hora de tomar o seu medicamento');
     await FlutterRingtonePlayer().playAlarm();
+  }
+
+  static Future<void> _triggerReminder(int id) async {
+    final NotificationService _notificationService = NotificationService();
+    _notificationService.showNotification(id, 'Lembrete de Medicamento',
+        'Você ainda não tomou o seu medicamento.');
   }
 
   Future<void> showNotification(int id, String title, String body) async {

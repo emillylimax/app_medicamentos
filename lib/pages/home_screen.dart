@@ -174,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _medicamentosHoje = medicamentos;
       _categorizarMedicamentos();
       _scheduleNotifications();
-      _scheduleMissedDoseNotifications(); // Ensure missed dose notifications are scheduled
+      _scheduleMissedDoseNotifications();
     });
   }
 
@@ -251,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _scheduleMissedDoseNotifications() {
-    int notificationId = 1000; // Start ID for missed dose notifications
+    int notificationId = 1000;
     for (var medicamento in _medicamentosHoje) {
       final frequencia = medicamento['frequencia'] ?? {};
       final horarios = List<String>.from(frequencia['horarios'] ?? []);
@@ -273,14 +273,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void _scheduleMissedDoseReminder(
       int id, String medicamentoNome, String horario, DateTime scheduledTime) {
     final now = DateTime.now();
-    final missedDoseTime = now.add(Duration(hours: 1));
+    final missedDoseTime = now.add(Duration(minutes: 1));
 
     _notificationService.scheduleRepeatingNotification(
         id,
         'Lembrete de Dose Perdida',
         'Ei, você esqueceu de tomar $medicamentoNome originalmente marcado para $horario',
         missedDoseTime,
-        Duration(hours: 1));
+        Duration(minutes: 1));
   }
 
   static Future<void> _triggerAlarm(int id) async {
@@ -345,7 +345,6 @@ class _HomeScreenState extends State<HomeScreen> {
       };
     });
 
-    // Cancel missed dose notifications
     for (int i = 1000; i < 1100; i++) {
       _notificationService.cancelNotification(i);
     }
