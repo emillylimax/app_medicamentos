@@ -77,6 +77,40 @@ class NotificationService {
     }
   }
 
+  Future<void> scheduleRepeatingNotification(int id, String title, String body,
+      DateTime firstTime, Duration interval) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'your_channel_id',
+      'your_channel_name',
+      channelDescription: 'your_channel_description',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: false,
+    );
+
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    try {
+      await flutterLocalNotificationsPlugin.periodicallyShow(
+        id,
+        title,
+        body,
+        // RepeatInterval.everyMinute,
+        RepeatInterval.hourly,
+        platformChannelSpecifics,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      );
+    } on PlatformException catch (e) {
+      if (e.code == 'exact_alarms_not_permitted') {
+        if (await Permission.scheduleExactAlarm.isDenied) {
+          await Permission.scheduleExactAlarm.request();
+        }
+      }
+    }
+  }
+
   static Future<void> _triggerAlarm(int id) async {
     final NotificationService _notificationService = NotificationService();
     _notificationService.showNotification(
