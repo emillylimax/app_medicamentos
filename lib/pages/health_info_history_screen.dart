@@ -57,11 +57,21 @@ class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
       _dailyData['glucose']?[day] ??= [];
       _dailyData['weight']?[day] ??= [];
 
-      _dailyData['systolic']?[day]?.add(info['systolic']?.toDouble() ?? 0);
-      _dailyData['diastolic']?[day]?.add(info['diastolic']?.toDouble() ?? 0);
-      _dailyData['heartRate']?[day]?.add(info['heartRate']?.toDouble() ?? 0);
-      _dailyData['glucose']?[day]?.add(info['glucose']?.toDouble() ?? 0);
-      _dailyData['weight']?[day]?.add(info['weight']?.toDouble() ?? 0);
+      if (info['systolic'] != null && info['systolic'] != 0) {
+        _dailyData['systolic']?[day]?.add(info['systolic'].toDouble());
+      }
+      if (info['diastolic'] != null && info['diastolic'] != 0) {
+        _dailyData['diastolic']?[day]?.add(info['diastolic'].toDouble());
+      }
+      if (info['heartRate'] != null && info['heartRate'] != 0) {
+        _dailyData['heartRate']?[day]?.add(info['heartRate'].toDouble());
+      }
+      if (info['glucose'] != null && info['glucose'] != 0) {
+        _dailyData['glucose']?[day]?.add(info['glucose'].toDouble());
+      }
+      if (info['weight'] != null && info['weight'] != 0) {
+        _dailyData['weight']?[day]?.add(info['weight'].toDouble());
+      }
     }
 
     // Log para depuração
