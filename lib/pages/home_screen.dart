@@ -237,15 +237,23 @@ class _HomeScreenState extends State<HomeScreen> {
         final minute = int.parse(timeParts[1]);
         final scheduledTime = DateTime(_selectedDate.year, _selectedDate.month,
             _selectedDate.day, hour, minute);
-        debugPrint(
-            'Agendando notificação para: ${medicamento['nome']} às $scheduledTime');
-        _notificationService.scheduleNotification(
-            notificationId++,
-            'Lembrete de Medicamento',
-            'Está na hora de tomar o seu medicamento: ${medicamento['nome']}',
-            scheduledTime);
-        AndroidAlarmManager.oneShotAt(
-            scheduledTime, notificationId, _triggerAlarm);
+
+        final dataFormatada = DateFormat('yyyy-MM-dd').format(_selectedDate);
+        final statusData =
+            _medicamentoStatus[medicamento['id']]?[dataFormatada]?[horario];
+        final status = statusData?['status'];
+
+        if (status != true) {
+          debugPrint(
+              'Agendando notificação para: ${medicamento['nome']} às $scheduledTime');
+          _notificationService.scheduleNotification(
+              notificationId++,
+              'Lembrete de Medicamento',
+              'Está na hora de tomar o seu medicamento: ${medicamento['nome']}',
+              scheduledTime);
+          AndroidAlarmManager.oneShotAt(
+              scheduledTime, notificationId, _triggerAlarm);
+        }
       }
     }
   }
