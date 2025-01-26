@@ -314,7 +314,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final medicamentoData = medicamentoSnapshot.data() as Map<String, dynamic>;
 
     final agora = DateTime.now();
-    final dataFormatada = DateFormat('yyyy-MM-dd').format(agora);
+    final dataFormatada = DateFormat('yyyy-MM-dd').format(_selectedDate);
     final horarioTomado = DateFormat('HH:mm').format(agora);
 
     final horariosTomados =
@@ -360,7 +360,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final medicamentoData = medicamentoSnapshot.data() as Map<String, dynamic>;
 
     final hoje = DateTime.now();
-    final dataFormatada = DateFormat('yyyy-MM-dd').format(hoje);
+    final dataFormatada = DateFormat('yyyy-MM-dd').format(_selectedDate);
 
     final horariosTomados =
         List<String>.from(medicamentoData['horariosTomados'] ?? []);
