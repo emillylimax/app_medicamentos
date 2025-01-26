@@ -173,8 +173,48 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _medicamentosHoje = medicamentos;
       _categorizarMedicamentos();
+      _loadMedicamentoStatus();
       _scheduleNotifications();
       _scheduleMissedDoseNotifications();
+    });
+  }
+
+  Future<void> _loadMedicamentoStatus() async {
+    User? user = _auth.currentUser;
+    if (user == null) return;
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('medicamentos')
+        .where('uid', isEqualTo: user.uid)
+        .get();
+
+    final medicamentos = snapshot.docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      data['id'] = doc.id;
+      return data;
+    }).toList();
+
+    setState(() {
+      for (var medicamento in medicamentos) {
+        final horariosTomados =
+            List<String>.from(medicamento['horariosTomados'] ?? []);
+        for (var horarioTomado in horariosTomados) {
+          final parts = horarioTomado.split(' ');
+          final dataFormatada = parts[0];
+          final horario = parts[1];
+
+          if (_medicamentoStatus[medicamento['id']] == null) {
+            _medicamentoStatus[medicamento['id']] = {};
+          }
+          if (_medicamentoStatus[medicamento['id']]![dataFormatada] == null) {
+            _medicamentoStatus[medicamento['id']]![dataFormatada] = {};
+          }
+          _medicamentoStatus[medicamento['id']]![dataFormatada]![horario] = {
+            'status': true,
+            'horarioTomado': horario,
+          };
+        }
+      }
     });
   }
 
@@ -227,7 +267,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _scheduleNotifications() {
-    int notificationId = 0;
     for (var medicamento in _medicamentosHoje) {
       final frequencia = medicamento['frequencia'] ?? {};
       final horarios = List<String>.from(frequencia['horarios'] ?? []);
@@ -244,15 +283,26 @@ class _HomeScreenState extends State<HomeScreen> {
         final status = statusData?['status'];
 
         if (status != true) {
+          final notificationId =
+              _generateNotificationId(medicamento['id'], horario);
           debugPrint(
-              'Agendando notificação para: ${medicamento['nome']} às $scheduledTime');
+              'Agendando notificação para: ${medicamento['nome']} às $scheduledTime com ID: $notificationId');
           _notificationService.scheduleNotification(
-              notificationId++,
+              notificationId,
               'Lembrete de Medicamento',
               'Está na hora de tomar o seu medicamento: ${medicamento['nome']}',
               scheduledTime);
           AndroidAlarmManager.oneShotAt(
               scheduledTime, notificationId, _triggerAlarm);
+
+          // Atualizar o campo notificationId no Firebase
+          FirebaseFirestore.instance
+              .collection('medicamentos')
+              .doc(medicamento['id'])
+              .update({
+            'notificationId': FieldValue.arrayUnion([notificationId])
+          });
+          debugPrint('Adicionando notificationId ao Firebase: $notificationId');
         }
       }
     }
@@ -353,9 +403,21 @@ class _HomeScreenState extends State<HomeScreen> {
       };
     });
 
-    for (int i = 1000; i < 1100; i++) {
-      _notificationService.cancelNotification(i);
-    }
+    // Cancelar notificações específicas para o medicamento tomado
+    final notificationId = _generateNotificationId(medicamentoId, horario);
+    _notificationService.cancelNotification(notificationId);
+    debugPrint('Cancelando notificação com ID: $notificationId');
+
+    // Atualizar o campo notificationId no Firebase
+    await medicamentoRef.update({
+      'notificationId': FieldValue.arrayRemove([notificationId])
+    });
+    debugPrint('Removendo notificationId do Firebase: $notificationId');
+  }
+
+  int _generateNotificationId(String medicamentoId, String horario) {
+    // Gerar um ID único para a notificação com base no ID do medicamento e horário
+    return medicamentoId.hashCode ^ horario.hashCode;
   }
 
   Future<void> _marcarComoNaoTomado(
