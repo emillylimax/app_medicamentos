@@ -174,6 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _medicamentosHoje = medicamentos;
       _categorizarMedicamentos();
       _scheduleNotifications();
+      _scheduleMissedDoseNotifications();
     });
   }
 
@@ -249,6 +250,37 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _scheduleMissedDoseNotifications() {
+    int notificationId = 1000; // Start ID for missed dose notifications
+    for (var medicamento in _medicamentosHoje) {
+      final frequencia = medicamento['frequencia'] ?? {};
+      final horarios = List<String>.from(frequencia['horarios'] ?? []);
+      for (var horario in horarios) {
+        final timeParts = horario.split(':');
+        final hour = int.parse(timeParts[0]);
+        final minute = int.parse(timeParts[1]);
+        final scheduledTime = DateTime(_selectedDate.year, _selectedDate.month,
+            _selectedDate.day, hour, minute);
+
+        if (DateTime.now().isAfter(scheduledTime)) {
+          _scheduleMissedDoseReminder(
+              notificationId++, medicamento['nome'], horario, scheduledTime);
+        }
+      }
+    }
+  }
+
+  void _scheduleMissedDoseReminder(
+      int id, String medicamentoNome, String horario, DateTime scheduledTime) {
+    final missedDoseTime = scheduledTime.add(Duration(hours: 1));
+
+    _notificationService.scheduleNotification(
+        id,
+        'Lembrete de Dose Perdida',
+        'Ei, você esqueceu de tomar $medicamentoNome originalmente marcado para $horario',
+        missedDoseTime);
+  }
+
   static Future<void> _triggerAlarm(int id) async {
     final NotificationService _notificationService = NotificationService();
     _notificationService.showNotification(
@@ -310,6 +342,11 @@ class _HomeScreenState extends State<HomeScreen> {
         'horarioTomado': horarioTomado,
       };
     });
+
+    // Cancel missed dose notifications
+    for (int i = 1000; i < 1100; i++) {
+      _notificationService.cancelNotification(i);
+    }
   }
 
   Future<void> _marcarComoNaoTomado(
@@ -551,7 +588,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ListTile(
               leading: Icon(Icons.view_list),
-              title: Text('Visualizar Medicamentos'),
+              title: Text('Medicamentos Cadastrados'),
               onTap: () {
                 Navigator.push(
                   context,
