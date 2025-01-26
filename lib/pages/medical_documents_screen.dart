@@ -54,8 +54,7 @@ class _MedicalDocumentsScreenState extends State<MedicalDocumentsScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title:
-              Text(index != null ? 'Editar Documento' : 'Adicionar Documento'),
+          title: Text(index != null ? 'Editar' : 'Adicionar'),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               return Column(
@@ -92,7 +91,7 @@ class _MedicalDocumentsScreenState extends State<MedicalDocumentsScreen> {
                         });
                       }
                     },
-                    child: Text('Selecionar Imagem'),
+                    child: Text('Selecionar'),
                   ),
                   if (selectedFile != null)
                     Padding(
@@ -221,8 +220,10 @@ class _MedicalDocumentsScreenState extends State<MedicalDocumentsScreen> {
               child: Column(
                 children: [
                   Expanded(
-                    child: Image.file(document['file'],
-                        fit: BoxFit.cover, height: 150),
+                    child: Container(
+                      width: double.infinity,
+                      child: Image.file(document['file'], fit: BoxFit.cover),
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
