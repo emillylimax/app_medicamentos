@@ -266,7 +266,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _medicamentosNoite.sort((a, b) => a['horario'].compareTo(b['horario']));
   }
 
-  void _scheduleNotifications() {
+  void _scheduleNotifications() async {
+    // Cancelar todas as notificações existentes antes de agendar novas
+    await _notificationService.cancelAllNotifications();
+
     for (var medicamento in _medicamentosHoje) {
       final frequencia = medicamento['frequencia'] ?? {};
       final horarios = List<String>.from(frequencia['horarios'] ?? []);
@@ -303,6 +306,9 @@ class _HomeScreenState extends State<HomeScreen> {
             'notificationId': FieldValue.arrayUnion([notificationId])
           });
           debugPrint('Adicionando notificationId ao Firebase: $notificationId');
+        } else {
+          debugPrint(
+              'Não agendando notificação para: ${medicamento['nome']} às $scheduledTime');
         }
       }
     }
@@ -323,22 +329,21 @@ class _HomeScreenState extends State<HomeScreen> {
         if (DateTime.now().isAfter(scheduledTime)) {
           _scheduleMissedDoseReminder(
               notificationId++, medicamento['nome'], horario, scheduledTime);
+        } else {
+          debugPrint(
+              'Não agendando notificação de dose perdida para: ${medicamento['nome']} às $scheduledTime');
         }
       }
     }
   }
 
-  void _scheduleMissedDoseReminder(
-      int id, String medicamentoNome, String horario, DateTime scheduledTime) {
+  void _scheduleMissedDoseReminder(int notificationId, String medicamentoNome,
+      String horario, DateTime scheduledTime) {
     final now = DateTime.now();
-    final missedDoseTime = now.add(Duration(minutes: 1));
-
-    _notificationService.scheduleRepeatingNotification(
-        id,
-        'Lembrete de Dose Perdida',
-        'Ei, você esqueceu de tomar $medicamentoNome originalmente marcado para $horario',
-        missedDoseTime,
-        Duration(minutes: 1));
+    if (now.isAfter(scheduledTime)) {
+      _notificationService.showNotification(notificationId, 'Dose Perdida',
+          'Você perdeu a dose de $medicamentoNome programada para $horario');
+    }
   }
 
   static Future<void> _triggerAlarm(int id) async {
