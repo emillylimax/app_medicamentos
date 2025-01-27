@@ -62,6 +62,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  void _cancelRegistration() {
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,10 +77,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               TextField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: 'Nome Completo'),
+                decoration: InputDecoration(
+                  labelText: 'Nome Completo',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  prefixIcon: Icon(Icons.person),
+                ),
               ),
               SizedBox(height: 20),
-              Text('Data de Nascimento', style: TextStyle(fontSize: 16)),
+              Text(
+                'Data de Nascimento',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
               SizedBox(height: 10),
               Container(
                 height: 150,
@@ -97,22 +110,56 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: TextEditingController(
                   text: DateFormat('dd-MM-yyyy').format(_selectedDate),
                 ),
-                decoration: InputDecoration(labelText: 'Data de Nascimento'),
+                decoration: InputDecoration(
+                  labelText: 'Data de Nascimento',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  prefixIcon: Icon(Icons.calendar_today),
+                ),
                 readOnly: true,
               ),
+              SizedBox(height: 20),
               TextField(
                 controller: _emailController,
-                decoration: InputDecoration(labelText: 'E-mail'),
+                decoration: InputDecoration(
+                  labelText: 'E-mail',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  prefixIcon: Icon(Icons.email),
+                ),
               ),
+              SizedBox(height: 20),
               TextField(
                 controller: _passwordController,
                 obscureText: true,
-                decoration: InputDecoration(labelText: 'Senha'),
+                decoration: InputDecoration(
+                  labelText: 'Senha',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  prefixIcon: Icon(Icons.lock),
+                ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 30),
               ElevatedButton(
                 onPressed: _createAccountWithEmailPassword,
                 child: Text('Registrar'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  textStyle: TextStyle(fontSize: 16),
+                ),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: _cancelRegistration,
+                child: Text('Cancelar'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  textStyle: TextStyle(fontSize: 16),
+                  backgroundColor: Colors.red,
+                ),
               ),
             ],
           ),
