@@ -308,7 +308,8 @@ class _CadastroMedicamentosScreenState
     return ElevatedButton(
       onPressed: () => _toggleDia(dia),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.blue : Colors.grey,
+        backgroundColor:
+            isSelected ? Colors.blue : const Color.fromARGB(255, 55, 55, 55),
       ),
       child: Text(dia),
     );

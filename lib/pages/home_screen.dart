@@ -59,8 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _checkAuthentication() async {
     User? user = _auth.currentUser;
     if (user == null) {
-      await Future.delayed(
-          Duration(milliseconds: 100)); // Adicionado para garantir a navegação
+      await Future.delayed(Duration(milliseconds: 100));
       Navigator.pushReplacementNamed(context, '/login');
     }
   }
@@ -700,13 +699,6 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.edit),
-              title: Text('Editar Perfil'),
-              onTap: () {
-                _navigateToEditProfile(context);
-              },
-            ),
-            ListTile(
               leading: Icon(Icons.favorite),
               title: Text('Registrar Informações de Saúde'),
               onTap: () {
@@ -740,6 +732,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     builder: (context) => MedicalDocumentsScreen(),
                   ),
                 );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.edit),
+              title: Text('Editar Perfil'),
+              onTap: () {
+                _navigateToEditProfile(context);
               },
             ),
             ListTile(
