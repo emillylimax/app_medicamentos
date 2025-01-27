@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HealthInfoHistoryScreen extends StatefulWidget {
   @override
@@ -11,6 +12,7 @@ class HealthInfoHistoryScreen extends StatefulWidget {
 class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
   List<Map<String, dynamic>> _healthInfoList = [];
   Map<String, Map<String, List<double>>> _dailyData = {};
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
@@ -19,23 +21,31 @@ class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
   }
 
   Future<void> _loadHealthInfo() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('health_info')
-        .orderBy('timestamp', descending: true)
-        .get();
+    User? user = _auth.currentUser;
+    if (user == null) return;
 
-    final healthInfoList = snapshot.docs.map((doc) {
-      final data = doc.data() as Map<String, dynamic>;
-      data['id'] = doc.id;
-      return data;
-    }).toList();
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('health_info')
+          .where('uid', isEqualTo: user.uid)
+          .orderBy('timestamp', descending: true)
+          .get();
 
-    setState(() {
-      _healthInfoList = healthInfoList;
-      _calculateDailyData();
-    });
+      final healthInfoList = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return data;
+      }).toList();
 
-    debugPrint('Health Info List: $_healthInfoList');
+      setState(() {
+        _healthInfoList = healthInfoList;
+        _calculateDailyData();
+      });
+
+      debugPrint('Health Info List: $_healthInfoList');
+    } catch (e) {
+      debugPrint('Erro ao carregar informações de saúde: $e');
+    }
   }
 
   void _calculateDailyData() {
@@ -120,7 +130,8 @@ class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
             final timestamp = DateTime.parse(info['timestamp']);
             final formattedDate = DateFormat('dd-MM-yyyy').format(timestamp);
             final formattedTime = DateFormat('HH:mm').format(timestamp);
-            final value = info['value'];
+            final value =
+                info[field]?.toString() ?? 'N/A'; // Ensure value is not null
             return Card(
               color: const Color.fromARGB(255, 44, 44, 44),
               margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -212,31 +223,31 @@ class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
     final systolicData = _healthInfoList
         .where((info) => info['systolic'] != null)
         .map((info) =>
-            {'timestamp': info['timestamp'], 'value': info['systolic']})
+            {'timestamp': info['timestamp'], 'systolic': info['systolic']})
         .toList();
 
     final diastolicData = _healthInfoList
         .where((info) => info['diastolic'] != null)
         .map((info) =>
-            {'timestamp': info['timestamp'], 'value': info['diastolic']})
+            {'timestamp': info['timestamp'], 'diastolic': info['diastolic']})
         .toList();
 
     final heartRateData = _healthInfoList
         .where((info) => info['heartRate'] != null)
         .map((info) =>
-            {'timestamp': info['timestamp'], 'value': info['heartRate']})
+            {'timestamp': info['timestamp'], 'heartRate': info['heartRate']})
         .toList();
 
     final glucoseData = _healthInfoList
         .where((info) => info['glucose'] != null)
         .map((info) =>
-            {'timestamp': info['timestamp'], 'value': info['glucose']})
+            {'timestamp': info['timestamp'], 'glucose': info['glucose']})
         .toList();
 
     final weightData = _healthInfoList
         .where((info) => info['weight'] != null)
-        .map(
-            (info) => {'timestamp': info['timestamp'], 'value': info['weight']})
+        .map((info) =>
+            {'timestamp': info['timestamp'], 'weight': info['weight']})
         .toList();
 
     debugPrint('Systolic Data: $systolicData');

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RegisterHealthInfoScreen extends StatefulWidget {
   @override
@@ -28,6 +29,9 @@ class _RegisterHealthInfoScreenState extends State<RegisterHealthInfoScreen> {
 
   Future<void> _saveHealthInfo() async {
     if (_formKey.currentState!.validate()) {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
       final systolic = _systolicController.text.isNotEmpty
           ? int.parse(_systolicController.text)
           : null;
@@ -47,6 +51,7 @@ class _RegisterHealthInfoScreenState extends State<RegisterHealthInfoScreen> {
       final formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
 
       await FirebaseFirestore.instance.collection('health_info').add({
+        'uid': user.uid,
         'systolic': systolic,
         'diastolic': diastolic,
         'heartRate': heartRate,

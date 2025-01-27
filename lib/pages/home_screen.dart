@@ -6,6 +6,7 @@ import 'package:app_medicamentos/pages/view_meds_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -279,7 +280,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _scheduleNotifications() async {
-    // Cancelar todas as notificações existentes antes de agendar novas
     await _notificationService.cancelAllNotifications();
 
     for (var medicamento in _medicamentosHoje) {
@@ -365,6 +365,55 @@ class _HomeScreenState extends State<HomeScreen> {
     final NotificationService _notificationService = NotificationService();
     _notificationService.showNotification(
         id, 'Alarme de Medicamento', 'Está na hora de tomar o seu medicamento');
+  }
+
+  void _schedulePeriodicNotifications() async {
+    await _notificationService.cancelAllNotifications();
+
+    for (var medicamento in _medicamentosHoje) {
+      final frequencia = medicamento['frequencia'] ?? {};
+      final horarios = List<String>.from(frequencia['horarios'] ?? []);
+      for (var horario in horarios) {
+        final timeParts = horario.split(':');
+        final hour = int.parse(timeParts[0]);
+        final minute = int.parse(timeParts[1]);
+        final scheduledTime = DateTime(_selectedDate.year, _selectedDate.month,
+            _selectedDate.day, hour, minute);
+
+        if (scheduledTime.isBefore(DateTime.now())) {
+          continue;
+        }
+
+        final dataFormatada = DateFormat('yyyy-MM-dd').format(_selectedDate);
+        final statusData =
+            _medicamentoStatus[medicamento['id']]?[dataFormatada]?[horario];
+        final status = statusData?['status'];
+
+        if (status != true) {
+          final notificationId =
+              _generateNotificationId(medicamento['id'], horario);
+          debugPrint(
+              'Agendando notificação periódica para: ${medicamento['nome']} às $scheduledTime com ID: $notificationId');
+          _notificationService.schedulePeriodicNotification(
+              notificationId,
+              'Lembrete de Medicamento',
+              'Está na hora de tomar o seu medicamento: ${medicamento['nome']}',
+              scheduledTime,
+              RepeatInterval.everyMinute);
+
+          FirebaseFirestore.instance
+              .collection('medicamentos')
+              .doc(medicamento['id'])
+              .update({
+            'notificationId': FieldValue.arrayUnion([notificationId])
+          });
+          debugPrint('Adicionando notificationId ao Firebase: $notificationId');
+        } else {
+          debugPrint(
+              'Não agendando notificação periódica para: ${medicamento['nome']} às $scheduledTime');
+        }
+      }
+    }
   }
 
   Future<void> _signOut(BuildContext context) async {

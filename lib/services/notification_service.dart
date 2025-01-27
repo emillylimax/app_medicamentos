@@ -22,9 +22,8 @@ class NotificationService {
 
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) async {
-        // Handle notification tapped logic here
-      },
+      onDidReceiveNotificationResponse:
+          (NotificationResponse response) async {},
     );
 
     if (await Permission.scheduleExactAlarm.isDenied) {
@@ -49,7 +48,6 @@ class NotificationService {
     const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
-    // Verificar se a data agendada é no futuro
     if (scheduledTime.isBefore(DateTime.now())) {
       throw ArgumentError('scheduledTime must be a date in the future');
     }
@@ -121,6 +119,24 @@ class NotificationService {
         }
       }
     }
+  }
+
+  Future<void> schedulePeriodicNotification(int id, String title, String body,
+      DateTime scheduledTime, RepeatInterval interval) async {
+    await flutterLocalNotificationsPlugin.periodicallyShow(
+      id,
+      title,
+      body,
+      interval,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'your_channel_id',
+          'your_channel_name',
+          channelDescription: 'your_channel_description',
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
   }
 
   static Future<void> _triggerAlarm(int id) async {

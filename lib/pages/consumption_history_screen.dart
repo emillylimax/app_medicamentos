@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HistoricoConsumoScreen extends StatefulWidget {
   @override
@@ -10,6 +11,7 @@ class HistoricoConsumoScreen extends StatefulWidget {
 class _HistoricoConsumoScreenState extends State<HistoricoConsumoScreen> {
   String? _selectedMedicamento;
   List<String> _medicamentos = [];
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
@@ -18,8 +20,13 @@ class _HistoricoConsumoScreenState extends State<HistoricoConsumoScreen> {
   }
 
   Future<void> _loadMedicamentos() async {
-    final snapshot =
-        await FirebaseFirestore.instance.collection('medicamentos').get();
+    User? user = _auth.currentUser;
+    if (user == null) return;
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('medicamentos')
+        .where('uid', isEqualTo: user.uid)
+        .get();
     setState(() {
       _medicamentos =
           snapshot.docs.map((doc) => doc['nome'] as String).toList();
@@ -28,6 +35,8 @@ class _HistoricoConsumoScreenState extends State<HistoricoConsumoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    User? user = _auth.currentUser;
+
     return Scaffold(
       appBar: AppBar(title: Text('Histórico de Consumo')),
       body: Column(
@@ -55,11 +64,21 @@ class _HistoricoConsumoScreenState extends State<HistoricoConsumoScreen> {
             child: StreamBuilder(
               stream: FirebaseFirestore.instance
                   .collection('consumo')
+                  .where('uid', isEqualTo: user?.uid)
                   .orderBy('data', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'Nenhum consumo cadastrado.',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  );
                 }
 
                 var consumoDocs = snapshot.data!.docs;
