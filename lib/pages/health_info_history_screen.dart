@@ -76,15 +76,10 @@ class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
     debugPrint('Daily Data: $_dailyData');
   }
 
-  double _calculateMode(List<double> values) {
+  double _calculateAverage(List<double> values) {
     if (values.isEmpty) return 0;
-    final frequency = <double, int>{};
-    for (var value in values) {
-      frequency[value] = (frequency[value] ?? 0) + 1;
-    }
-    final mode =
-        frequency.entries.reduce((a, b) => a.value > b.value ? a : b).key;
-    return mode;
+    final sum = values.reduce((a, b) => a + b);
+    return sum / values.length;
   }
 
   String _getUnit(String field) {
@@ -106,14 +101,14 @@ class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
   Widget _buildHealthInfoCard(
       String title, List<Map<String, dynamic>> data, String field) {
     final days = _dailyData[field]?.keys.toList() ?? [];
-    final modes = days.map((day) {
+    final averages = days.map((day) {
       final values = _dailyData[field]?[day] ?? [];
-      return _calculateMode(values);
+      return _calculateAverage(values);
     }).toList();
     final unit = _getUnit(field);
 
     debugPrint('Days: $days');
-    debugPrint('Modes: $modes');
+    debugPrint('Averages: $averages');
 
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8),
@@ -162,15 +157,34 @@ class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
                   context: context,
                   builder: (context) {
                     return AlertDialog(
-                      title: Text('Modas por Dia'),
+                      title: Text('Médias Diárias'),
                       content: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: days.asMap().entries.map((entry) {
                           final index = entry.key;
                           final day = entry.value;
-                          return Text(
-                              '$day: ${modes[index].toStringAsFixed(2)} $unit');
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  day,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color.fromARGB(
+                                          221, 255, 255, 255)),
+                                ),
+                                Text(
+                                  '${averages[index].toStringAsFixed(2)} $unit',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blueAccent),
+                                ),
+                              ],
+                            ),
+                          );
                         }).toList(),
                       ),
                       actions: [
@@ -185,7 +199,7 @@ class _HealthInfoHistoryScreenState extends State<HealthInfoHistoryScreen> {
                   },
                 );
               },
-              child: Text('Ver Modas'),
+              child: Text('Ver Médias'),
             ),
           ),
         ],

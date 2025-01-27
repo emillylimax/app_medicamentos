@@ -400,7 +400,7 @@ class _EditMedicamentoScreenState extends State<EditMedicamentoScreen> {
       onPressed: () => _toggleDia(dia),
       style: ElevatedButton.styleFrom(
         backgroundColor:
-            isSelected ? Colors.blue : const Color.fromARGB(255, 82, 82, 82),
+            isSelected ? Colors.blue : const Color.fromARGB(255, 55, 55, 55),
       ),
       child: Text(dia),
     );
