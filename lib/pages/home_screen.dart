@@ -453,6 +453,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     await FirebaseFirestore.instance.collection('consumo').add({
+      'uid': FirebaseAuth.instance.currentUser?.uid,
       'medicamentoId': medicamentoId,
       'nome': medicamentoData['nome'],
       'horario': horario,
