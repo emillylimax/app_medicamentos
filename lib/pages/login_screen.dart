@@ -84,47 +84,84 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(title: Text('Login/Registro')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20.0),
-              child: Image.asset(
-                'assets/images/logo.png',
-                width: 200,
-                height: 200,
-                fit: BoxFit.cover,
-              ),
-            ),
-            SizedBox(height: 100),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: 'E-mail'),
-            ),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: 'Senha'),
-            ),
-            SizedBox(height: 20),
-            _isLoading
-                ? CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _login,
-                    child: Text('Login'),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20.0),
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.cover,
                   ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RegisterScreen()),
-                );
-              },
-              child: Text('Registrar'),
+                ),
+                SizedBox(height: 30),
+                TextField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: 'E-mail',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    prefixIcon: Icon(Icons.email),
+                  ),
+                ),
+                SizedBox(height: 12),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Senha',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    prefixIcon: Icon(Icons.lock),
+                  ),
+                ),
+                SizedBox(height: 40),
+                _isLoading
+                    ? CircularProgressIndicator()
+                    : Column(
+                        children: [
+                          ElevatedButton(
+                            onPressed: _login,
+                            child: Text('Login'),
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 32, vertical: 16),
+                              textStyle: TextStyle(fontSize: 16),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 63, 63, 63),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => RegisterScreen()),
+                              );
+                            },
+                            child: Text('Registrar'),
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 32, vertical: 16),
+                              textStyle: TextStyle(fontSize: 16),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 63, 63, 63),
+                            ),
+                          ),
+                        ],
+                      ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

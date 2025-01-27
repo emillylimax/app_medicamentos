@@ -40,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _checkAuthentication();
     _loadProfileImage();
     _initializeHive();
     _notificationService.initializeNotifications();
@@ -53,6 +54,15 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     _loadUserName();
     _loadMedicamentosHoje();
+  }
+
+  void _checkAuthentication() async {
+    User? user = _auth.currentUser;
+    if (user == null) {
+      await Future.delayed(
+          Duration(milliseconds: 100)); // Adicionado para garantir a navegação
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
 
   @override
