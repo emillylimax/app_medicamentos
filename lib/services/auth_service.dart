@@ -17,7 +17,7 @@ class AuthService {
       return result.user;
     } catch (e) {
       print(e);
-      return null;
+      throw e;
     }
   }
 
@@ -31,7 +31,7 @@ class AuthService {
       return result.user;
     } catch (e) {
       print(e);
-      return null;
+      throw e;
     }
   }
 

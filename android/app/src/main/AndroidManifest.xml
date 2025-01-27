@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.app_medicamentos">
     <application
-        android:label="app_medicamentos"
+        android:label="Lembrete de Medicamentos"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -14,6 +14,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _dobController = TextEditingController();
+  bool _isLoading = false;
 
   DateTime _selectedDate = DateTime.now();
 
@@ -28,6 +30,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    setState(() {
+      _isLoading = true;
+    });
+
     final authService = Provider.of<AuthService>(context, listen: false);
 
     try {
@@ -40,7 +46,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
-      _showErrorDialog("Erro ao registrar usuário: ${e.toString()}");
+      String errorMessage;
+      if (e is FirebaseAuthException) {
+        if (e.code == 'email-already-in-use') {
+          errorMessage = 'Este e-mail já está em uso. Tente outro.';
+        } else if (e.code == 'invalid-email') {
+          errorMessage = 'Formato de e-mail inválido. Verifique o e-mail.';
+        } else if (e.code == 'weak-password') {
+          errorMessage = 'A senha é muito fraca. Tente uma senha mais forte.';
+        } else {
+          errorMessage = 'Erro ao tentar registrar: ${e.message}';
+        }
+      } else {
+        errorMessage = 'Erro ao tentar registrar: ${e.toString()}';
+      }
+
+      _showErrorDialog(errorMessage);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -143,14 +168,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: _createAccountWithEmailPassword,
-                child: Text('Registrar'),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  textStyle: TextStyle(fontSize: 16),
-                ),
-              ),
+              _isLoading
+                  ? CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _createAccountWithEmailPassword,
+                      child: Text('Registrar'),
+                      style: ElevatedButton.styleFrom(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        textStyle: TextStyle(fontSize: 16),
+                      ),
+                    ),
               SizedBox(height: 10),
               ElevatedButton(
                 onPressed: _cancelRegistration,
