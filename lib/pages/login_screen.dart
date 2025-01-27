@@ -83,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(title: Text('Login/Registro')),
+      appBar: AppBar(title: Text(' ')),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -91,6 +91,15 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Text(
+                  'Lembrete de Medicamentos',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 60),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(20.0),
                   child: Image.asset(
@@ -99,6 +108,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 200,
                     fit: BoxFit.cover,
                   ),
+                ),
+                SizedBox(height: 60),
+                Text(
+                  'Faça o login ou registre-se para acessar.',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 30),
                 TextField(
@@ -123,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     prefixIcon: Icon(Icons.lock),
                   ),
                 ),
-                SizedBox(height: 40),
+                SizedBox(height: 30),
                 _isLoading
                     ? CircularProgressIndicator()
                     : Column(
