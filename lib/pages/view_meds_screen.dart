@@ -53,6 +53,7 @@ class _ViewMedicamentosScreenState extends State<ViewMedicamentosScreen> {
               final medicamento = medicamentos[index];
               final nome = medicamento['nome'] ?? 'Sem Nome';
               final dosagem = medicamento['dosagem'] ?? 'Sem Dosagem';
+              final quantidade = medicamento['quantidade'] ?? 'Sem Quantidade';
               final frequencia = medicamento['frequencia'] ?? {};
               final duracao = medicamento['duracao'] ?? 'Sem Duração';
               final observacoes = medicamento.data() != null &&
@@ -79,7 +80,7 @@ class _ViewMedicamentosScreenState extends State<ViewMedicamentosScreen> {
                 child: ListTile(
                   title: Text(nome, style: TextStyle(fontSize: 18)),
                   subtitle: Text(
-                      'Dosagem: $dosagem\nFrequência: $diasFormatados\nHorários: $horariosFormatados\nDuração: $duracao\nObservações: $observacoes'),
+                      'Dosagem: $dosagem\nQuantidade: $quantidade\nFrequência: $diasFormatados\nHorários: $horariosFormatados\nDuração: $duracao\nObservações: $observacoes'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

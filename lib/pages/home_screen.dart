@@ -534,6 +534,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildMedicamentoCard(Map<String, dynamic> medicamento) {
     final nome = medicamento['nome'] ?? 'Sem Nome';
     final dosagem = medicamento['dosagem'] ?? 'Sem Dosagem';
+    final quantidade = medicamento['quantidade'] ?? 'Sem Quantidade';
     final horario = medicamento['horario'] ?? 'Sem Horário';
     final observacoes = medicamento['observacoes'];
     final dataFormatada = DateFormat('yyyy-MM-dd').format(_selectedDate);
@@ -548,7 +549,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ? const Color.fromARGB(255, 194, 99, 109)
             : Colors.grey[800];
 
-    String subtitleText = 'Dosagem: $dosagem\nHorário: $horario';
+    String subtitleText =
+        'Dosagem: $dosagem\nQuantidade: $quantidade\nHorário: $horario';
     if (observacoes != null && observacoes.isNotEmpty) {
       subtitleText += '\nObservações: $observacoes';
     }
@@ -575,6 +577,13 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               TextSpan(
                 text: dosagem,
+              ),
+              TextSpan(
+                text: '\nQuantidade: ',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              TextSpan(
+                text: quantidade,
               ),
               TextSpan(
                 text: '\nHorário: ',
