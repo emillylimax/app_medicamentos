@@ -60,53 +60,54 @@ class _MedicalDocumentsScreenState extends State<MedicalDocumentsScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          // title: Text(index != null ? 'Editar' : 'Adicionar'),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: titleController,
-                    decoration: InputDecoration(labelText: 'Título'),
-                  ),
-                  SizedBox(height: 10),
-                  DropdownButton<String>(
-                    value: selectedType,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedType = newValue!;
-                      });
-                    },
-                    items: <String>['Exame', 'Receita']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                  SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final pickedFile = await ImagePicker()
-                          .pickImage(source: ImageSource.gallery);
-                      if (pickedFile != null) {
-                        setState(() {
-                          selectedFile = File(pickedFile.path);
-                        });
-                      }
-                    },
-                    child: Text('Selecionar'),
-                  ),
-                  if (selectedFile != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Image.file(selectedFile!, height: 320),
+          content: SingleChildScrollView(
+            child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: titleController,
+                      decoration: InputDecoration(labelText: 'Título'),
                     ),
-                ],
-              );
-            },
+                    SizedBox(height: 10),
+                    DropdownButton<String>(
+                      value: selectedType,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedType = newValue!;
+                        });
+                      },
+                      items: <String>['Exame', 'Receita']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                    SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final pickedFile = await ImagePicker()
+                            .pickImage(source: ImageSource.gallery);
+                        if (pickedFile != null) {
+                          setState(() {
+                            selectedFile = File(pickedFile.path);
+                          });
+                        }
+                      },
+                      child: Text('Selecionar'),
+                    ),
+                    if (selectedFile != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Image.file(selectedFile!, height: 320),
+                      ),
+                  ],
+                );
+              },
+            ),
           ),
           actions: [
             Center(
